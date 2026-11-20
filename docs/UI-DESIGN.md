@@ -37,7 +37,7 @@ Applied the `frontend-design` skill's Retrofit workflow to the embedded dashboar
 
 ## Brand asset note
 
-`logo.png` appeared in the repository root during this pass. It was used only to derive the palette and to confirm that the existing three-bar CSS mark echoes the logo's speed lines. It was **not** embedded in the dashboard: the PNG has a white background that would fight the dark console, and the mark is already built in CSS. The file remains untracked and uncommitted — include it in `web/static/` only if you want the full wordmark shown somewhere.
+The brand asset now lives at `web/static/logo.png` and is embedded into the binary by `web/render.go`. The palette was derived from it (navy neutrals, teal signal, orange warning). Because the PNG has a white background, it is shown inside a deliberate light "brand plate" on the login screen and in the dashboard sidebar rather than floating on the dark surfaces. `README.md` also renders the same file at the top.
 
 ## Verification
 

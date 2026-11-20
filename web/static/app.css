@@ -63,15 +63,16 @@ code { font-size: .92em; color: var(--mint); }
   position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
   background: var(--bg-deep); border-right: 1px solid var(--line); padding: 24px 16px 16px;
 }
-.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; padding: 0 8px 26px; }
-.brand-mark { display: flex; align-items: flex-end; gap: 3px; width: 24px; height: 24px; }
-.brand-mark span { flex: 1; background: var(--mint); border-radius: 1px; }
-.brand-mark span:nth-child(1) { height: 40%; opacity: .5; }
-.brand-mark span:nth-child(2) { height: 100%; }
-.brand-mark span:nth-child(3) { height: 65%; opacity: .75; }
-.brand-mark--lg { width: 34px; height: 34px; gap: 4px; }
-.brand-text strong { display: block; font-size: 15px; letter-spacing: -.02em; }
-.brand-text small { display: block; font-size: 11px; letter-spacing: .02em; color: var(--faint); }
+.brand { display: block; text-decoration: none; padding: 0 8px 24px; }
+.brand-plate {
+  display: block; background: #f6f8f7; border: 1px solid #d9e2de;
+  border-radius: var(--radius); padding: 8px;
+}
+.brand-plate img {
+  display: block; width: 100%; height: 64px; object-fit: cover; object-position: center;
+  border-radius: 2px;
+}
+.brand-plate--sidebar img { height: 40px; }
 .nav-label { font-size: 11px; color: var(--muted); padding: 0 8px 8px; }
 .side-nav { display: flex; flex-direction: column; gap: 3px; }
 .nav-link {
@@ -310,8 +311,6 @@ progress::-moz-progress-bar { background: var(--mint); border-radius: 2px; }
 .access-bar-left { display: flex; align-items: center; gap: 8px; }
 .access-inner { padding: 30px; display: flex; flex-direction: column; gap: 22px; }
 .access-brand { display: flex; align-items: center; gap: 14px; }
-.access-wordmark { font-size: 16px; font-weight: 500; letter-spacing: -.02em; }
-.access-sub { font-size: 11px; letter-spacing: .02em; color: var(--faint); }
 .access-copy { display: flex; flex-direction: column; gap: 10px; }
 .access-lede { color: var(--muted); font-size: 13px; }
 .login-form { display: flex; flex-direction: column; gap: 14px; }

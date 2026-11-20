@@ -259,6 +259,10 @@ func TestAdminAuthAndSecurityHeaders(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("readyz: %d", w.Code)
 	}
+	w = e.do(httptest.NewRequest(http.MethodGet, "/static/logo.png", nil))
+	if w.Code != http.StatusOK || !strings.Contains(w.Header().Get("Content-Type"), "image/png") {
+		t.Fatalf("logo asset: %d %s", w.Code, w.Header().Get("Content-Type"))
+	}
 }
 
 var csrfPattern = regexp.MustCompile(`name="csrf_token" value="([^"]+)"`)
