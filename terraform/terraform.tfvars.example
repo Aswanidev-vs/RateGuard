@@ -1,0 +1,30 @@
+# Copy to terraform.tfvars (gitignored) and fill in. Never commit this file.
+aws_region   = "ap-south-1"
+project      = "rateguard"
+environment  = "dev"
+instance_type = "t3.micro"
+
+# Generate with: openssl rand -base64 48
+# You can also pass these via TF_VAR_admin_api_key / TF_VAR_session_secret so
+# they never touch disk.
+admin_api_key  = "replace-with-a-long-random-admin-key"
+session_secret = "replace-with-a-long-random-session-secret"
+
+# Optional: email gets both anomaly and billing alerts.
+admin_email = ""
+
+# Optional: point DNS here for Caddy/HTTPS. Empty = HTTP on the public IP.
+domain_name = ""
+
+alarm_threshold_usd = 1
+app_image_tag       = "latest"
+
+# Optional SSH (strongly recommended to leave empty; use SSM Session Manager).
+allowed_ssh_cidr = ""
+
+deletion_protection   = false
+force_destroy_buckets = true
+log_retention_days    = 7
+
+# Built before apply: GOOS=linux GOARCH=arm64 go build -o build/bootstrap ./cmd/lambda
+lambda_zip_path = "../build/bootstrap"

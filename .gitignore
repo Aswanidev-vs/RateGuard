@@ -24,6 +24,9 @@ terraform/crash.log
 terraform/tfplan
 terraform/*.auto.tfvars
 terraform/backend.hcl
+terraform/*.tfvars
+terraform/*.zip
+terraform/build/
 terraform/bootstrap/.terraform/
 terraform/bootstrap/*.tfstate
 terraform/bootstrap/*.tfstate.*

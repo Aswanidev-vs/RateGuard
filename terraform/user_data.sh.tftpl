@@ -1,0 +1,136 @@
+#!/bin/bash
+# Rendered by Terraform. Secrets are fetched from SSM by the application, not
+# baked into this script or its .env file.
+set -euo pipefail
+exec > >(tee /var/log/rateguard-userdata.log) 2>&1
+
+dnf install -y docker jq curl
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+systemctl enable --now docker
+
+mkdir -p /opt/rateguard
+cd /opt/rateguard
+
+aws ecr get-login-password --region ${aws_region} \
+  | docker login --username AWS --password-stdin ${ecr_repo_url}
+
+cat > .env <<'EOF'
+APP_ENV=production
+PORT=8080
+STORE_BACKEND=dynamodb
+AWS_REGION=${aws_region}
+SSM_ENABLED=true
+SSM_PARAM_PREFIX=${ssm_prefix}
+DYNAMODB_TENANTS_TABLE=${tenants_table}
+DYNAMODB_USAGE_TABLE=${usage_table}
+DYNAMODB_ANOMALIES_TABLE=${anomalies_table}
+PROXY_UPSTREAM_URL=http://demo:8090
+DEMO_ENABLED=true
+COOKIE_SECURE=${cookie_secure}
+TRUST_PROXY_HEADERS=true
+DOMAIN=${caddy_domain}
+IMAGE_TAG=${image_tag}
+EOF
+
+cat > docker-compose.yml <<'EOF'
+services:
+  api:
+    image: "${ecr_repo_url}:$${IMAGE_TAG}"
+    env_file: .env
+    expose:
+      - "8080"
+    depends_on:
+      demo:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "/app/rateguard", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  demo:
+    image: "${ecr_repo_url}:$${IMAGE_TAG}"
+    entrypoint: ["/app/demo"]
+    environment:
+      PORT: "8090"
+    expose:
+      - "8090"
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=8m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  caddy:
+    image: caddy:2.8-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${caddy_domain}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
+EOF
+
+cat > Caddyfile <<'EOF'
+${caddy_domain} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+	reverse_proxy api:8080
+}
+EOF
+
+cat > deploy.sh <<'EOF'
+#!/bin/bash
+set -euo pipefail
+cd /opt/rateguard
+TAG="$${1:?usage: deploy.sh IMAGE_TAG}"
+sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=$${TAG}|" .env
+aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repo_url}
+docker compose pull api demo
+docker compose up -d --no-deps api demo
+EOF
+chmod +x deploy.sh
+
+# The ECR repository can exist before the first image is pushed by CI. Wait
+# briefly rather than failing boot when the tag is not there yet.
+for attempt in $(seq 1 30); do
+  if docker compose pull api demo; then
+    break
+  fi
+  echo "Image not available yet (attempt ${attempt}/30); retrying in 20s"
+  sleep 20
+done
+docker compose up -d
