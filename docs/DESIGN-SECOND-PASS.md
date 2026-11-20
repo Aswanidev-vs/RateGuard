@@ -31,6 +31,12 @@ The surfaces were well-composed but generic: stat cards and charts could belong 
 - Help page gained the response-header contract table.
 - Tenant creation uses `hx-indicator` (Context7-confirmed pattern) so the in-flight state is explicit.
 
+## Third pass — brand legibility and honest navigation
+
+- Added `logo-dark.png`, a dark-surface variant where the navy wordmark and gauge needle are rendered in off-white while the teal/orange brand colors stay untouched. It is used in the header, console mockup, and footer; the original `logo.png` stays on light plates and in the README.
+- Removed every fixed `height` attribute from logo `<img>` tags and set `height: auto` in CSS so the 1007×166 crop is never stretched.
+- Removed the fake `Product` / `Solutions` dropdown carets and the nonsensical `Company` link. Navigation now says exactly what it opens: Features → `#product`, How it works → `#how`, Quick start → Docker guide, Docs → repository README.
+
 ## Verification
 
 - `go test ./...` passes, including template rendering.
