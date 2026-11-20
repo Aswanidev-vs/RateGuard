@@ -46,6 +46,14 @@ func (l *AttemptLimiter) Allow(key string) bool {
 	defer l.mu.Unlock()
 	if len(l.windows) >= maxAttemptKeys {
 		l.cleanupLocked(now)
+		if len(l.windows) >= maxAttemptKeys {
+			// All entries are still live. Evict one arbitrarily so arbitrary
+			// source IPs cannot grow the map without bound.
+			for oldKey := range l.windows {
+				delete(l.windows, oldKey)
+				break
+			}
+		}
 	}
 	w := l.windows[key]
 	if w == nil || !now.Before(w.resetAt) {

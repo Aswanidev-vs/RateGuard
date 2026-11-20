@@ -219,6 +219,25 @@ func TestTenantLifecycleAndProxyRateLimit(t *testing.T) {
 	}
 }
 
+func TestProxyRejectsDotSegments(t *testing.T) {
+	var gotPath string
+	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer up.Close()
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	proxy, _, err := newProxy(up.URL, log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest(http.MethodGet, "http://example.com/proxy/../admin", nil)
+	proxy.ServeHTTP(httptest.NewRecorder(), r)
+	if gotPath != "/" {
+		t.Fatalf("upstream path = %q, want / (dot segments must be stripped)", gotPath)
+	}
+}
+
 func TestAdminAuthAndSecurityHeaders(t *testing.T) {
 	e := newTestEnv(t)
 	w := e.do(httptest.NewRequest(http.MethodGet, "/api/v1/tenants", nil))

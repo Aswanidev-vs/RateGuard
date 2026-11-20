@@ -223,6 +223,7 @@ data "aws_iam_policy_document" "ci_policy" {
     resources = [
       "arn:aws:ssm:${var.aws_region}:*:document/AWS-RunShellScript",
       "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:managed-instance/*",
+      "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:command/*",
       "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
     ]
   }

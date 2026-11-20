@@ -156,7 +156,7 @@ func (c *Config) Validate() error {
 	default:
 		return fmt.Errorf("STORE_BACKEND must be memory or dynamodb, got %q", c.StoreBackend)
 	}
-	if c.DevMode == false && c.StoreBackend != "dynamodb" {
+	if !c.DevMode && c.StoreBackend != "dynamodb" {
 		return errors.New("STORE_BACKEND must be dynamodb when APP_ENV=production")
 	}
 	if c.TenantsTable == "" || c.UsageTable == "" || c.AnomaliesTable == "" {

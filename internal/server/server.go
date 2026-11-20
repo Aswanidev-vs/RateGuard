@@ -72,7 +72,6 @@ type Server struct {
 	loginLimit *auth.AttemptLimiter
 	adminLimit *auth.AttemptLimiter
 	proxy      http.Handler
-	upstream   *url.URL
 	handler    http.Handler
 	now        func() time.Time
 }
@@ -99,11 +98,11 @@ func New(opts Options) (*Server, error) {
 		now:        time.Now,
 	}
 	if opts.Config.UpstreamURL != "" {
-		p, target, err := newProxy(opts.Config.UpstreamURL, opts.Logger)
+		p, _, err := newProxy(opts.Config.UpstreamURL, opts.Logger)
 		if err != nil {
 			return nil, err
 		}
-		s.proxy, s.upstream = p, target
+		s.proxy = p
 	}
 	s.handler = s.routes()
 	return s, nil
@@ -115,6 +114,7 @@ func (s *Server) Handler() http.Handler { return s.handler }
 func (s *Server) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
+	r.Use(middleware.CleanPath)
 	r.Use(s.securityHeaders)
 	r.Use(s.requestLogger)
 	r.Use(s.recoverer)
@@ -326,6 +326,7 @@ func (s *Server) sameOrigin(r *http.Request) bool {
 }
 
 func (s *Server) renderError(w http.ResponseWriter, r *http.Request, status int, message string) {
+	w.Header().Set("Cache-Control", "no-store")
 	token := s.sessionFromRequest(r)
 	data := web.ErrorData{
 		LayoutData: web.LayoutData{

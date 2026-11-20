@@ -42,6 +42,15 @@ func newProxy(rawURL string, log *slog.Logger) (*httputil.ReverseProxy, *url.URL
 		} else if !strings.HasPrefix(path, "/") {
 			path = "/" + path
 		}
+		// A client must not be able to climb out of the upstream base path
+		// with /proxy/../... (including percent-encoded dot segments, which
+		// net/http has already decoded into URL.Path).
+		for _, segment := range strings.Split(path, "/") {
+			if segment == ".." {
+				path = "/"
+				break
+			}
+		}
 		req.URL.Path = path
 		req.URL.RawPath = ""
 		baseDirector(req)
