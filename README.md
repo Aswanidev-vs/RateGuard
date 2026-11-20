@@ -15,18 +15,178 @@ Multi-tenant API rate limiting (token bucket) plus AWS cost anomaly detection, w
 
 ## Architecture
 
+### High-level dataflow
+
+```mermaid
+flowchart LR
+  subgraph Edge
+    C["Client / browser"]
+    G["Caddy edge<br/>:80 / :443"]
+  end
+
+  subgraph App["RateGuard Go service"]
+    P["chi router + proxy"]
+    AK["Admin key verifier"]
+    TK["Tenant key auth + TTL cache"]
+    B["Token bucket limiter"]
+    U["Usage recorder<br/>batched"]
+    D["Dashboard<br/>embedded HTMX"]
+  end
+
+  subgraph AWS["AWS"]
+    DDB[("DynamoDB<br/>tenants / usage / anomalies")]
+    SSM[("SSM Parameter Store")]
+    SNS["SNS topic"]
+    CW["CloudWatch Billing<br/>us-east-1"]
+    EB["EventBridge<br/>hourly"]
+    L["Cost anomaly Lambda"]
+  end
+
+  DEMO["examples/quote<br/>:8090"]
+
+  C -->|"Bearer ag_live_..."| G
+  G --> P
+  P --> AK
+  P --> TK
+  TK -->|"prefix lookup"| DDB
+  DDB -->|"tenant record"| TK
+  P --> B
+  P -->|"allowed: /quote"| DEMO
+  P -->|"429 + Retry-After"| C
+  P --> U
+  U -->|"batched flush"| DDB
+  D -->|"usage + anomalies"| DDB
+  SSM -.->|"startup secrets"| P
+  SSM -.->|"startup secrets"| L
+  EB --> L
+  L --> CW
+  L --> DDB
+  L --> SNS
+  SNS --> D
 ```
-Client (browser / curl)
-  │  Authorization: Bearer ag_live_...
-  ▼
-Caddy (:80/:443)
-  ▼
-Go proxy (:8080)  ──► token bucket (in-process) ──► DynamoDB (tenant config)
-  │                   usage buffer ───────────────► DynamoDB (hourly, 30-day TTL)
-  │                   dashboard (embedded HTMX templates)
-  │
-EventBridge (hourly) ──► Lambda ──► CloudWatch billing (us-east-1)
-                                ──► DynamoDB (anomalies) ──► SNS + dashboard
+
+### Request lifecycle through the proxy
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant C as Client
+  participant G as Caddy
+  participant P as RateGuard proxy
+  participant A as Auth + DynamoDB
+  participant B as Token bucket
+  participant U as Quote upstream
+  participant W as Usage recorder
+  participant D as DynamoDB
+
+  C->>G: GET /proxy/quote + Bearer key
+  G->>P: forward request
+  P->>A: verify hash via prefix cache
+  A-->>P: tenant config (limit, burst, enabled)
+  P->>B: Allow(tenantID, limitRPM, burst)
+  alt bucket has a token
+    B-->>P: allowed, remaining
+    P->>U: GET /quote (key and cookie headers removed)
+    U-->>P: 200 JSON quote
+    P-->>C: 200 + X-RateLimit-*
+    P->>W: record allowed + latency
+  else bucket empty
+    B-->>P: rejected, RetryAfter
+    P-->>C: 429 + Retry-After + X-RateLimit-*
+    P->>W: record blocked
+  end
+  W->>D: batched flush (10s / 100 events)
+```
+
+### Token bucket states
+
+```mermaid
+stateDiagram-v2
+  [*] --> Full: tenant created
+  Full --> Draining: consume 1 token
+  Draining --> Full: refill at limitRPM / 60 per sec
+  Draining --> Empty: tokens less than 1
+  Empty --> Rejected: new request
+  Rejected --> Refilling: wait Retry-After
+  Refilling --> Draining: one token available
+  Draining --> Disabled: tenant disabled
+  Full --> Disabled: tenant disabled
+  Disabled --> [*]: key rejected
+```
+
+### Data model
+
+```mermaid
+erDiagram
+  TENANTS ||--o{ USAGE : "hourly usage"
+  TENANTS {
+    string tenant_id PK
+    string name
+    string email
+    string api_key_hash
+    string api_key_prefix "GSI lookup"
+    int limit_rpm
+    int burst
+    boolean enabled
+    string created_at
+    string updated_at
+  }
+  USAGE {
+    string tenant_id PK
+    string bucket SK "YYYY-MM-DDTHH"
+    int allowed
+    int blocked
+    int count
+    int sum_latency_ms
+    map latency_hist
+    int ttl "30 days"
+  }
+  ANOMALIES {
+    string tenant_id PK "__account__"
+    string detected_at SK "hour bucket"
+    string metric
+    float value
+    float baseline
+    float threshold
+    string severity
+    boolean alerted
+  }
+```
+
+Anomalies use the reserved `__account__` tenant because AWS billing data is account-wide, not per tenant.
+
+### Cost anomaly pipeline
+
+```mermaid
+flowchart TD
+  EB["EventBridge: rate(1 hour)"] --> L["Cost anomaly Lambda"]
+  BILL[("CloudWatch Billing<br/>AWS/Billing EstimatedCharges<br/>us-east-1")] -->|"8 daily totals"| L
+  L --> RULE{"current greater than mean + 2 stddev<br/>OR current greater than 1.5 x mean?"}
+  RULE -->|"no"| IGNORE["No record, no alert"]
+  RULE -->|"yes"| PUT["PutIfAbsent(tenant, hour)"]
+  PUT -->|"duplicate"| SKIP["Skip alert - idempotent"]
+  PUT -->|"new"| SNS["Publish SNS alert"]
+  SNS --> MARK["Mark anomaly alerted"]
+  PUT --> DDB[("Anomalies table")]
+  DDB --> DASH["Dashboard widget"]
+```
+
+### CI/CD pipeline
+
+```mermaid
+flowchart TD
+  PR["Pull request"] --> T["Go vet + race tests + build"]
+  PR --> TF["terraform fmt -check + validate"]
+  T --> G{"All checks green?"}
+  TF --> G
+  G -->|"no"| BLOCK["Block merge"]
+  G -->|"yes"| MERGE["Merged to main"]
+  MERGE --> IMG["Build distroless image"]
+  IMG --> SCAN["Trivy HIGH/CRITICAL gate"]
+  SCAN --> PUSH["Push SHA + latest to ECR"]
+  PUSH --> DEP["SSM deploy.sh on EC2"]
+  DEP --> SMOKE["curl /healthz"]
+  SMOKE --> OK["Deployed"]
 ```
 
 - **Tenant keys:** `ag_live_<random>`; shown once, stored as SHA-256 plus a short prefix, verified in constant time with a bounded TTL cache.
