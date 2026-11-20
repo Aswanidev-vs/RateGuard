@@ -259,11 +259,17 @@ func TestOriginAllowed(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := originAllowed(tc.origin, tc.host, tc.forward, tc.trust)
+			got := originAllowed(tc.origin, tc.host, tc.forward, tc.trust, false)
 			if got != tc.expected {
 				t.Fatalf("originAllowed(%q, %q, %q, %t) = %t, want %t", tc.origin, tc.host, tc.forward, tc.trust, got, tc.expected)
 			}
 		})
+	}
+	if !originAllowed("http://localhost:3000", "127.0.0.1:8080", "", false, true) {
+		t.Fatal("dev mode should allow loopback hosts on different ports")
+	}
+	if originAllowed("http://localhost:3000", "127.0.0.1:8080", "", false, false) {
+		t.Fatal("production should reject loopback hosts on different ports")
 	}
 }
 

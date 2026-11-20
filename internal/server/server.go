@@ -311,12 +311,19 @@ func (s *Server) clientIP(r *http.Request) string {
 }
 
 func (s *Server) sameOrigin(r *http.Request) bool {
-	if strings.EqualFold(r.Header.Get("Sec-Fetch-Site"), "cross-site") {
+	site := strings.ToLower(r.Header.Get("Sec-Fetch-Site"))
+	if site == "cross-site" {
 		return false
 	}
 	origin := r.Header.Get("Origin")
 	forwarded := r.Header.Get("X-Forwarded-Host")
-	if originAllowed(origin, r.Host, forwarded, s.cfg.TrustProxy) {
+
+	// The browser's own same-origin assertion is authoritative even when a
+	// proxy rewrites the Host header Go sees.
+	if site == "same-origin" {
+		return true
+	}
+	if originAllowed(origin, r.Host, forwarded, s.cfg.TrustProxy, s.cfg.DevMode) {
 		return true
 	}
 	s.log.Warn("origin rejected",
@@ -324,14 +331,16 @@ func (s *Server) sameOrigin(r *http.Request) bool {
 		"origin", origin,
 		"host", r.Host,
 		"forwarded_host", forwarded,
+		"sec_fetch_site", site,
 	)
 	return false
 }
 
 // originAllowed compares a browser Origin against the host Go sees. Loopback
-// aliases (localhost and 127.0.0.1 on the same port) are treated as one host,
-// and a trusted proxy may supply the public host via X-Forwarded-Host.
-func originAllowed(origin, host, forwardedHost string, trustProxy bool) bool {
+// aliases (localhost and 127.0.0.1) are treated as one host; in development
+// the port is ignored too. A trusted proxy may supply the public host via
+// X-Forwarded-Host.
+func originAllowed(origin, host, forwardedHost string, trustProxy, devMode bool) bool {
 	if origin == "" {
 		return true
 	}
@@ -350,8 +359,20 @@ func originAllowed(origin, host, forwardedHost string, trustProxy bool) bool {
 		if strings.EqualFold(u.Host, candidate) || sameLoopbackHost(u.Host, candidate) {
 			return true
 		}
+		if devMode && isLoopbackHostString(u.Host) && isLoopbackHostString(candidate) {
+			return true
+		}
 	}
 	return false
+}
+
+// isLoopbackHostString handles host[:port] values from Origin/Host headers.
+func isLoopbackHostString(hostPort string) bool {
+	host := hostPort
+	if h, _, err := net.SplitHostPort(hostPort); err == nil {
+		host = h
+	}
+	return isLoopbackHost(host)
 }
 
 func sameLoopbackHost(a, b string) bool {
