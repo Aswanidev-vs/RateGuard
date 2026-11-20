@@ -315,14 +315,60 @@ func (s *Server) sameOrigin(r *http.Request) bool {
 		return false
 	}
 	origin := r.Header.Get("Origin")
+	forwarded := r.Header.Get("X-Forwarded-Host")
+	if originAllowed(origin, r.Host, forwarded, s.cfg.TrustProxy) {
+		return true
+	}
+	s.log.Warn("origin rejected",
+		"path", r.URL.Path,
+		"origin", origin,
+		"host", r.Host,
+		"forwarded_host", forwarded,
+	)
+	return false
+}
+
+// originAllowed compares a browser Origin against the host Go sees. Loopback
+// aliases (localhost and 127.0.0.1 on the same port) are treated as one host,
+// and a trusted proxy may supply the public host via X-Forwarded-Host.
+func originAllowed(origin, host, forwardedHost string, trustProxy bool) bool {
 	if origin == "" {
 		return true
 	}
 	u, err := url.Parse(origin)
-	if err != nil {
+	if err != nil || u.Host == "" {
 		return false
 	}
-	return strings.EqualFold(u.Host, r.Host)
+	hosts := []string{host}
+	if trustProxy && forwardedHost != "" {
+		hosts = append(hosts, strings.TrimSpace(strings.Split(forwardedHost, ",")[0]))
+	}
+	for _, candidate := range hosts {
+		if candidate == "" {
+			continue
+		}
+		if strings.EqualFold(u.Host, candidate) || sameLoopbackHost(u.Host, candidate) {
+			return true
+		}
+	}
+	return false
+}
+
+func sameLoopbackHost(a, b string) bool {
+	ah, ap, errA := net.SplitHostPort(a)
+	bh, bp, errB := net.SplitHostPort(b)
+	if errA != nil || errB != nil || ap != bp {
+		return false
+	}
+	return isLoopbackHost(ah) && isLoopbackHost(bh)
+}
+
+func isLoopbackHost(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 func (s *Server) renderError(w http.ResponseWriter, r *http.Request, status int, message string) {

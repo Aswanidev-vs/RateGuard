@@ -238,6 +238,35 @@ func TestProxyRejectsDotSegments(t *testing.T) {
 	}
 }
 
+func TestOriginAllowed(t *testing.T) {
+	cases := []struct {
+		name     string
+		origin   string
+		host     string
+		forward  string
+		trust    bool
+		expected bool
+	}{
+		{"exact", "http://localhost:8080", "localhost:8080", "", false, true},
+		{"case insensitive", "http://LOCALHOST:8080", "localhost:8080", "", false, true},
+		{"missing origin", "", "localhost:8080", "", false, true},
+		{"different host", "http://evil.example", "localhost:8080", "", false, false},
+		{"loopback alias", "http://127.0.0.1:8080", "localhost:8080", "", false, true},
+		{"loopback different port", "http://127.0.0.1:8081", "localhost:8080", "", false, false},
+		{"forwarded host trusted", "https://guard.example.com", "127.0.0.1:8080", "guard.example.com", true, true},
+		{"forwarded host untrusted", "https://guard.example.com", "127.0.0.1:8080", "guard.example.com", false, false},
+		{"malformed origin", "not a url", "localhost:8080", "", false, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := originAllowed(tc.origin, tc.host, tc.forward, tc.trust)
+			if got != tc.expected {
+				t.Fatalf("originAllowed(%q, %q, %q, %t) = %t, want %t", tc.origin, tc.host, tc.forward, tc.trust, got, tc.expected)
+			}
+		})
+	}
+}
+
 func TestAdminAuthAndSecurityHeaders(t *testing.T) {
 	e := newTestEnv(t)
 	w := e.do(httptest.NewRequest(http.MethodGet, "/api/v1/tenants", nil))
