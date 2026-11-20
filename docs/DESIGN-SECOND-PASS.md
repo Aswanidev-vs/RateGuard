@@ -34,7 +34,7 @@ The surfaces were well-composed but generic: stat cards and charts could belong 
 ## Third pass — brand legibility and honest navigation
 
 - Added `logo-dark.png`, a dark-surface variant where the navy wordmark and gauge needle are rendered in off-white while the teal/orange brand colors stay untouched. It is used in the header, console mockup, and footer; the original `logo.png` stays on light plates and in the README.
-- Removed every fixed `height` attribute from logo `<img>` tags and set `height: auto` in CSS so the 1007×166 crop is never stretched.
+- Removed all `width`/`height` attributes from logo `<img>` tags. Sizing is now width-driven only, with `aspect-ratio: 1007 / 166` and `object-fit: contain` locked in CSS, so the crop can never be distorted. Widths were reduced (160px nav, 100px console, 108px flow, 124px footer) to avoid a horizontally stretched appearance.
 - Removed the fake `Product` / `Solutions` dropdown carets and the nonsensical `Company` link. Navigation now says exactly what it opens: Features → `#product`, How it works → `#how`, Quick start → Docker guide, Docs → repository README.
 
 ## Verification

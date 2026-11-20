@@ -70,7 +70,7 @@ button { font: inherit; }
   display: flex; align-items: center; gap: 28px;
 }
 .brand { flex: none; }
-.brand img { width: 180px; height: auto; }
+.brand img { width: 160px; height: auto; aspect-ratio: 1007 / 166; object-fit: contain; }
 .primary-nav { display: flex; align-items: center; gap: 26px; margin-left: auto; }
 .primary-nav a {
   font-size: 14px; text-decoration: none; color: rgba(243, 247, 246, .86);
@@ -148,7 +148,7 @@ button { font: inherit; }
   display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, .08); background: #0a151d;
 }
-.console-top img { width: 110px; height: auto; }
+.console-top img { width: 100px; height: auto; aspect-ratio: 1007 / 166; object-fit: contain; }
 .console-live { font-family: var(--mono); font-size: 11px; color: #8fe3c8; display: flex; align-items: center; gap: 6px; }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ed5b1; }
 .console-body { display: grid; grid-template-columns: 132px 1fr; min-height: 360px; }
@@ -263,7 +263,7 @@ button { font: inherit; }
 .flow-node strong { font-size: 13px; }
 .flow-node small { color: var(--muted); font-size: 10px; }
 .flow-node-brand { border-color: var(--teal); background: var(--teal-soft); }
-.flow-node-brand img { width: 120px; height: auto; }
+.flow-node-brand img { width: 108px; height: auto; aspect-ratio: 1007 / 166; object-fit: contain; }
 .flow-arrow, .flow-plus { align-self: center; color: var(--teal-dark); font-size: 22px; font-weight: 600; }
 .flow-plus { color: var(--muted); }
 
@@ -291,7 +291,7 @@ button { font: inherit; }
 .copy-btn:hover { color: #fff; border-color: #fff; }
 .site-footer { background: #07131d; color: var(--on-dark-muted); padding: 36px 28px; }
 .footer-shell { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-.footer-shell img { width: 140px; height: auto; }
+.footer-shell img { width: 124px; height: auto; aspect-ratio: 1007 / 166; object-fit: contain; }
 .footer-shell p { font-size: 13px; }
 .footer-shell nav { display: flex; gap: 18px; margin-left: auto; }
 .footer-shell nav a { color: var(--on-dark-muted); font-size: 13px; text-decoration: none; }
