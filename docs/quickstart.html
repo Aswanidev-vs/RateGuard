@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Run RateGuard locally with Go or Docker, issue a tenant key, and see a 429 in minutes.">
+  <title>Quick start — RateGuard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="RateGuard home"><img src="logo-dark.png" alt="RateGuard"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#product">Features</a>
+        <a href="index.html#how">How it works</a>
+        <a href="quickstart.html" class="is-active">Quick start</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="quickstart.html">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="index.html">Home</a> / Quick start</p>
+        <h1>Run RateGuard locally</h1>
+        <p>Start the proxy, start the demo upstream, issue a tenant key, and watch the token bucket return its first 429. No AWS account needed for this path.</p>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <p class="page-lead">The Go process listens on <code>localhost:8080</code>. A plain <code>go run</code> does not read <code>.env</code>, so you export the variables in your shell first.</p>
+
+      <section class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h2>Start the RateGuard server</h2>
+          <p>From the repository root, in Git Bash:</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="run-bash">Copy</button>
+            <pre id="run-bash">export ADMIN_API_KEY="dev-admin-key-1234567890"
+export SESSION_SECRET="dev-session-secret-12345678901234567890"
+export STORE_BACKEND=memory
+export PROXY_UPSTREAM_URL=http://localhost:8090
+go run ./cmd/server</pre>
+          </div>
+          <p>Or in PowerShell:</p>
+          <div class="code-panel">
+            <div class="code-label">PowerShell</div>
+            <button class="code-copy" type="button" data-copy="run-ps">Copy</button>
+            <pre id="run-ps">$env:ADMIN_API_KEY="dev-admin-key-1234567890"
+$env:SESSION_SECRET="dev-session-secret-12345678901234567890"
+$env:STORE_BACKEND="memory"
+$env:PROXY_UPSTREAM_URL="http://localhost:8090"
+go run ./cmd/server</pre>
+          </div>
+          <p class="note">Dashboard: <code>http://localhost:8080/dashboard</code>. Health check: <code>http://localhost:8080/healthz</code>. Port 80 is only used when you run the Docker Compose stack with Caddy.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h2>Start the demo upstream</h2>
+          <p>In a second terminal, run the quote service that sits behind the proxy. It listens on <code>:8090</code>.</p>
+          <div class="code-panel">
+            <div class="code-label">Terminal 2</div>
+            <button class="code-copy" type="button" data-copy="upstream">Copy</button>
+            <pre id="upstream">go run ./examples/quote</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">3</span>
+        <div>
+          <h2>Issue a tenant key and flood the bucket</h2>
+          <p>Create a tenant with the admin key, then send more requests than its burst allows.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="flood">Copy</button>
+            <pre id="flood">KEY=$(curl -s -X POST http://localhost:8080/api/v1/tenants \
+  -H "Authorization: Bearer $ADMIN_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Demo","email":"demo@example.com","limit_rpm":60,"burst":5}' \
+  | python -c 'import json,sys; print(json.load(sys.stdin)["api_key"])')
+
+for i in $(seq 1 20); do
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -H "Authorization: Bearer $KEY" \
+    http://localhost:8080/proxy/quote
+done</pre>
+          </div>
+          <ul class="outcome-list">
+            <li>The first 5 requests return <code>200</code> and a random quote.</li>
+            <li>Later requests return <code>429</code> with <code>Retry-After</code>.</li>
+            <li>The dashboard shows allowed, blocked, and p95 latency for the tenant.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">4</span>
+        <div>
+          <h2>Sign in to the dashboard</h2>
+          <p>Open <code>http://localhost:8080/dashboard</code> and sign in with the admin key you exported:</p>
+          <div class="code-panel">
+            <div class="code-label">Admin key</div>
+            <button class="code-copy" type="button" data-copy="admin-key">Copy</button>
+            <pre id="admin-key">dev-admin-key-1234567890</pre>
+          </div>
+          <p>Tenant keys beginning with <code>ag_live_</code> cannot sign in here — they are for <code>/proxy/*</code> only.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">5</span>
+        <div>
+          <h2>Prefer Docker?</h2>
+          <p>Copy the environment template, generate real secrets, and bring up Caddy, the app, and the demo upstream together.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="docker">Copy</button>
+            <pre id="docker">cp .env.example .env
+# Generate two secrets with: openssl rand -base64 48
+# Then edit .env: ADMIN_API_KEY=... and SESSION_SECRET=...
+docker compose up -d --build</pre>
+          </div>
+          <p>With Compose, Caddy serves <code>http://localhost</code> on port 80. See the <a class="text-link" href="docker.html">Docker guide</a> for PowerShell commands and TLS setup.</p>
+        </div>
+      </section>
+
+      <a class="btn btn-primary next-link" href="terraform.html">Next: deploy to AWS <span aria-hidden="true">→</span></a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo-dark.png" alt="RateGuard">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="quickstart.html">Quick start</a>
+        <a href="docker.html">Docker</a>
+        <a href="terraform.html">Terraform</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>

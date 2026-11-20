@@ -37,6 +37,12 @@ The surfaces were well-composed but generic: stat cards and charts could belong 
 - Removed all `width`/`height` attributes from logo `<img>` tags. Sizing is now width-driven only, with `aspect-ratio: 1007 / 166` and `object-fit: contain` locked in CSS, so the crop can never be distorted. Widths were reduced (160px nav, 100px console, 108px flow, 124px footer) to avoid a horizontally stretched appearance.
 - Removed the fake `Product` / `Solutions` dropdown carets and the nonsensical `Company` link. Navigation now says exactly what it opens: Features → `#product`, How it works → `#how`, Quick start → Docker guide, Docs → repository README.
 
+## Fourth pass — destination pages instead of raw files
+
+- Added `quickstart.html`, `docs.html`, `docker.html`, `terraform.html`, and `security.html`, all sharing `styles.css` and `script.js`.
+- The landing page CTA, nav "Quick start"/"Docs", and every footer link now open real HTML pages. No link opens a raw `.md` file or drops the visitor at the footer.
+- Interior pages use one system: dark page hero with breadcrumb, numbered steps, copyable code panels, outcome lists, and a consistent footer. Nav active state marks the current page.
+
 ## Verification
 
 - `go test ./...` passes, including template rendering.

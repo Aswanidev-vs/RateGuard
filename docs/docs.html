@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RateGuard documentation hub: quick start, Docker, Terraform, API reference, and security notes.">
+  <title>Docs — RateGuard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="RateGuard home"><img src="logo-dark.png" alt="RateGuard"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#product">Features</a>
+        <a href="index.html#how">How it works</a>
+        <a href="quickstart.html">Quick start</a>
+        <a href="docs.html" class="is-active">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="quickstart.html">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="index.html">Home</a> / Docs</p>
+        <h1>Documentation</h1>
+        <p>Everything you need to run, deploy, and verify RateGuard. Start with the quick start, then choose a deployment path.</p>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <div class="doc-grid">
+        <a class="doc-card" href="quickstart.html">
+          <h2>Quick start</h2>
+          <p>Run the Go server and demo upstream, issue a tenant key, and trigger your first 429. Includes Git Bash and PowerShell commands.</p>
+          <code class="feature-code">go run ./cmd/server</code>
+        </a>
+        <a class="doc-card" href="docker.html">
+          <h2>Docker guide</h2>
+          <p>Build the multi-stage distroless image, run the compose stack, configure Caddy, and clean up with <code>docker compose down -v</code>.</p>
+          <code class="feature-code">docker compose up -d --build</code>
+        </a>
+        <a class="doc-card" href="terraform.html">
+          <h2>AWS deployment</h2>
+          <p>Bootstrap remote state, apply the Terraform stack, push the first ECR image, wire GitHub Actions, and test the cost anomaly Lambda.</p>
+          <code class="feature-code">terraform apply</code>
+        </a>
+        <a class="doc-card" href="security.html">
+          <h2>Security audit</h2>
+          <p>Trust boundaries, confirmed findings, fixes, and the residual validation still needed after deployment.</p>
+          <code class="feature-code">docs/SECURITY-AUDIT.md</code>
+        </a>
+      </div>
+
+      <h2 style="margin-top:48px">API reference</h2>
+      <p class="page-lead" style="margin-bottom:16px">Base path <code>/api/v1</code>. Admin routes use <code>Authorization: Bearer &lt;admin key&gt;</code>; tenant routes use an <code>ag_live_...</code> key.</p>
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>POST</td><td><code>/tenants</code></td><td>admin</td><td>Create a tenant; returns the one-time API key</td></tr>
+            <tr><td>GET</td><td><code>/tenants</code></td><td>admin</td><td>List tenants</td></tr>
+            <tr><td>GET</td><td><code>/tenants/{id}</code></td><td>admin</td><td>Read a tenant; hash is never returned</td></tr>
+            <tr><td>PATCH</td><td><code>/tenants/{id}</code></td><td>admin</td><td>Change limit, burst, or enabled state</td></tr>
+            <tr><td>DELETE</td><td><code>/tenants/{id}</code></td><td>admin</td><td>Soft-delete (disable) a tenant</td></tr>
+            <tr><td>GET</td><td><code>/tenants/{id}/usage</code></td><td>admin or tenant</td><td>allowed, blocked, avg and p95 latency</td></tr>
+            <tr><td>ANY</td><td><code>/proxy/*</code></td><td>tenant</td><td>Rate-limited passthrough to the upstream</td></tr>
+            <tr><td>GET</td><td><code>/healthz</code>, <code>/readyz</code></td><td>none</td><td>Liveness and store readiness</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 style="margin-top:48px">Proxy response headers</h2>
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead><tr><th>Header</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>X-RateLimit-Limit</code></td><td>Bucket capacity for this tenant</td></tr>
+            <tr><td><code>X-RateLimit-Remaining</code></td><td>Whole tokens left after this request</td></tr>
+            <tr><td><code>X-RateLimit-Reset</code></td><td>Epoch seconds until the bucket is full</td></tr>
+            <tr><td><code>Retry-After</code></td><td>Seconds until one token is available, on 429 only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo-dark.png" alt="RateGuard">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="quickstart.html">Quick start</a>
+        <a href="docker.html">Docker</a>
+        <a href="terraform.html">Terraform</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RateGuard security audit: trust boundaries, confirmed findings, fixes, and residual validation.">
+  <title>Security — RateGuard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="RateGuard home"><img src="logo-dark.png" alt="RateGuard"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#product">Features</a>
+        <a href="index.html#how">How it works</a>
+        <a href="quickstart.html">Quick start</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="quickstart.html">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="docs.html">Docs</a> / Security</p>
+        <h1>Security audit</h1>
+        <p>Source-first review of the Go app, containers, Terraform, and CI. This project is a learning implementation, not production hardening.</p>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <p class="page-lead">Full evidence and remediation detail live in <code>docs/SECURITY-AUDIT.md</code>. The confirmed fixes are summarized here.</p>
+
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead><tr><th>ID</th><th>Severity</th><th>Issue</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>SEC-01</td><td>High</td><td>DynamoDB usage expression bound <code>:sum_latency</code> but referenced <code>:sum_latency_ms</code></td><td>Corrected key; added expression placeholder regression test</td></tr>
+            <tr><td>SEC-02</td><td>Medium</td><td>Proxy dot-segment traversal toward upstream base paths</td><td>Dot-segment guard plus chi <code>CleanPath</code>, with test</td></tr>
+            <tr><td>SEC-03</td><td>Medium</td><td>Unbounded login/admin attempt-map growth</td><td>Capped map with eviction</td></tr>
+            <tr><td>SEC-04</td><td>Medium</td><td>CI role allowed SSM commands against any instance</td><td>Scoped to the created EC2 instance ARN</td></tr>
+            <tr><td>SEC-05</td><td>Low</td><td>Cacheable error pages and demo upstream without CSP</td><td><code>no-store</code> and a strict CSP added</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 style="margin-top:48px">Verified controls</h2>
+      <ul class="outcome-list">
+        <li>Raw API keys are generated with <code>crypto/rand</code>, hashed with SHA-256, shown once, and never logged.</li>
+        <li>Dashboard mutations require a signed session cookie, CSRF token, and an origin check.</li>
+        <li>Tenant keys are stripped before requests reach the upstream.</li>
+        <li>CI uses GitHub OIDC with no static AWS credentials, restricted to <code>main</code>.</li>
+        <li>ECR images run as UID 65532 on distroless with a read-only root filesystem.</li>
+      </ul>
+
+      <p class="note">Still needs operator validation: Terraform apply, ECR push, Trivy scan, OIDC trust, and a live deployment smoke test. Nothing was applied to AWS by the coding agent.</p>
+      <a class="btn btn-primary next-link" href="docs.html">Back to docs <span aria-hidden="true">→</span></a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo-dark.png" alt="RateGuard">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="quickstart.html">Quick start</a>
+        <a href="docker.html">Docker</a>
+        <a href="terraform.html">Terraform</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>

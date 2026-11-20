@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Provision RateGuard on AWS with Terraform: remote state, EC2, DynamoDB, ECR, SSM, SNS, and the cost anomaly Lambda.">
+  <title>AWS deployment — RateGuard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="RateGuard home"><img src="logo-dark.png" alt="RateGuard"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#product">Features</a>
+        <a href="index.html#how">How it works</a>
+        <a href="quickstart.html">Quick start</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="quickstart.html">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="docs.html">Docs</a> / AWS</p>
+        <h1>Deploy to AWS</h1>
+        <p>Terraform provisions the VPC, EC2, DynamoDB, ECR, SSM, SNS, CloudWatch alarm, and the hourly cost anomaly Lambda. You run every command; nothing was applied by the coding agent.</p>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <section class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h2>Build the Lambda binary first</h2>
+          <p><code>archive_file</code> needs a real <code>build/bootstrap</code> file at plan time.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="lambda-build">Copy</button>
+            <pre id="lambda-build">GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o build/bootstrap ./cmd/lambda</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h2>Bootstrap remote state</h2>
+          <p>From <code>terraform/bootstrap/</code>, create the S3 state bucket and DynamoDB lock table, then write <code>terraform/backend.hcl</code> using the outputs.</p>
+          <div class="code-panel">
+            <div class="code-label">Terraform via Docker — Git Bash</div>
+            <button class="code-copy" type="button" data-copy="bootstrap">Copy</button>
+            <pre id="bootstrap">docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest init
+docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest apply \
+  -var='bucket_name=rateguard-tfstate' -var='region=ap-south-1'</pre>
+          </div>
+          <div class="code-panel">
+            <div class="code-label">terraform/backend.hcl</div>
+            <pre>bucket         = "PASTE_STATE_BUCKET_OUTPUT"
+key            = "rateguard/dev/terraform.tfstate"
+region         = "ap-south-1"
+encrypt        = true
+dynamodb_table = "PASTE_LOCK_TABLE_OUTPUT"</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">3</span>
+        <div>
+          <h2>Plan and apply</h2>
+          <div class="code-panel">
+            <div class="code-label">From terraform/</div>
+            <button class="code-copy" type="button" data-copy="apply">Copy</button>
+            <pre id="apply">docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest init -backend-config=backend.hcl
+docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest fmt -check
+docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest validate
+docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest plan -out=tfplan
+docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest apply tfplan</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">4</span>
+        <div>
+          <h2>Verify and wire CI</h2>
+          <p>Check <code>/healthz</code> on the EC2 public IP, sign in with the admin key from SSM, then set GitHub variables from the Terraform outputs:</p>
+          <div class="code-panel">
+            <div class="code-label">Repository variables</div>
+            <pre>AWS_ROLE_ARN        = github_actions_role_arn
+ECR_REPOSITORY_URL  = ecr_repository_url
+EC2_INSTANCE_ID     = the t3.micro instance id
+PUBLIC_HEALTH_URL   = http://&lt;public-ip&gt; or https://&lt;domain&gt;</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">5</span>
+        <div>
+          <h2>Teardown</h2>
+          <div class="code-panel">
+            <div class="code-label">From terraform/</div>
+            <button class="code-copy" type="button" data-copy="destroy">Copy</button>
+            <pre id="destroy">docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest destroy</pre>
+          </div>
+          <p>The bootstrap state bucket and lock table survive intentionally; destroy them separately when you are finished.</p>
+        </div>
+      </section>
+
+      <a class="btn btn-primary next-link" href="docs.html">Back to docs <span aria-hidden="true">→</span></a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo-dark.png" alt="RateGuard">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="quickstart.html">Quick start</a>
+        <a href="docker.html">Docker</a>
+        <a href="terraform.html">Terraform</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>

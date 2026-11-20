@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Build and run the RateGuard Docker Compose stack with Caddy, the Go proxy, and the demo upstream.">
+  <title>Docker guide — RateGuard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="RateGuard home"><img src="logo-dark.png" alt="RateGuard"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#product">Features</a>
+        <a href="index.html#how">How it works</a>
+        <a href="quickstart.html">Quick start</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="quickstart.html">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="docs.html">Docs</a> / Docker</p>
+        <h1>Docker guide</h1>
+        <p>One multi-stage image builds two binaries: <code>/app/rateguard</code> and <code>/app/demo</code>. Compose starts Caddy, the proxy, and the demo upstream on a private network.</p>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <section class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h2>Prepare the environment</h2>
+          <p>Copy the template and replace both placeholders with random secrets. <code>.env</code> is gitignored.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="docker-env">Copy</button>
+            <pre id="docker-env">cp .env.example .env
+ADMIN_KEY="$(openssl rand -base64 48)"
+SESSION_KEY="$(openssl rand -base64 48)"
+sed -i "s|^ADMIN_API_KEY=.*|ADMIN_API_KEY=${ADMIN_KEY}|" .env
+sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=${SESSION_KEY}|" .env</pre>
+          </div>
+          <p class="note">Do not commit <code>.env</code>. Use <code>openssl rand -base64 48</code> or the .NET random generator in PowerShell.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h2>Build and start the stack</h2>
+          <div class="code-panel">
+            <div class="code-label">Any shell</div>
+            <button class="code-copy" type="button" data-copy="docker-up">Copy</button>
+            <pre id="docker-up">docker compose up -d --build
+docker compose ps
+docker compose logs -f api</pre>
+          </div>
+          <p>Caddy publishes ports 80 and 443. The API and demo services stay internal. Dashboard: <code>http://localhost/dashboard</code>.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">3</span>
+        <div>
+          <h2>Smoke test</h2>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="docker-smoke">Copy</button>
+            <pre id="docker-smoke">curl -s http://localhost/healthz
+KEY=$(curl -s -X POST http://localhost/api/v1/tenants \
+  -H "Authorization: Bearer $ADMIN_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Demo","email":"demo@example.com","limit_rpm":60,"burst":5}' \
+  | python -c 'import json,sys; print(json.load(sys.stdin)["api_key"])')
+curl -i -H "Authorization: Bearer $KEY" http://localhost/proxy/quote</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">4</span>
+        <div>
+          <h2>Teardown</h2>
+          <div class="code-panel">
+            <div class="code-label">Any shell</div>
+            <button class="code-copy" type="button" data-copy="docker-down">Copy</button>
+            <pre id="docker-down">docker compose down -v</pre>
+          </div>
+          <p>The app flushes buffered usage on <code>SIGTERM</code>, so allow the 30-second grace period before forcing anything.</p>
+        </div>
+      </section>
+
+      <a class="btn btn-primary next-link" href="terraform.html">Next: AWS deployment <span aria-hidden="true">→</span></a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo-dark.png" alt="RateGuard">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="quickstart.html">Quick start</a>
+        <a href="docker.html">Docker</a>
+        <a href="terraform.html">Terraform</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>
