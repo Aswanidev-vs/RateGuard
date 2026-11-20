@@ -30,7 +30,7 @@ output "ssm_prefix" {
 
 output "dynamodb_tables" {
   description = "Table names consumed by the app and Lambda."
-  value = {
+  value       = {
     tenants   = aws_dynamodb_table.tenants.name
     usage     = aws_dynamodb_table.usage.name
     anomalies = aws_dynamodb_table.anomalies.name

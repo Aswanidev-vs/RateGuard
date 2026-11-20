@@ -65,12 +65,18 @@ jobs:
       ECR_REPOSITORY_URL: ${{ vars.ECR_REPOSITORY_URL }}
     steps:
       - uses: actions/checkout@v4
-      - name: Verify repository variable
+      - name: Verify repository variables
         run: |
           if [ -z "${ECR_REPOSITORY_URL}" ]; then
             echo "Set the repository variable ECR_REPOSITORY_URL (Terraform output ecr_repository_url)." >&2
             exit 1
           fi
+          if [ -z "${AWS_ROLE_ARN}" ]; then
+            echo "Set the repository variable AWS_ROLE_ARN (Terraform output github_actions_role_arn)." >&2
+            exit 1
+          fi
+        env:
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
@@ -116,6 +122,21 @@ jobs:
     env:
       AWS_REGION: ap-south-1
     steps:
+      - name: Verify repository variables
+        run: |
+          missing=0
+          for name in AWS_ROLE_ARN EC2_INSTANCE_ID PUBLIC_HEALTH_URL; do
+            value="${!name}"
+            if [ -z "$value" ]; then
+              echo "Missing repository variable $name" >&2
+              missing=1
+            fi
+          done
+          exit "$missing"
+        env:
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          PUBLIC_HEALTH_URL: ${{ vars.PUBLIC_HEALTH_URL }}
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
@@ -141,5 +162,7 @@ jobs:
           test "$STATUS" = "Success"
       - name: Smoke test
         run: |
+          HEALTH_URL="${{ vars.PUBLIC_HEALTH_URL }}"
+          HEALTH_URL="${HEALTH_URL%/}"
           curl -fsS --retry 15 --retry-delay 4 --retry-connrefused \
-            "${{ vars.PUBLIC_HEALTH_URL }}/healthz"
+            "$HEALTH_URL/healthz"

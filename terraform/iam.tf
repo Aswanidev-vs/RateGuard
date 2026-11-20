@@ -21,8 +21,8 @@ resource "aws_iam_instance_profile" "ec2" {
 
 data "aws_iam_policy_document" "ec2_policy" {
   statement {
-    sid    = "ECRPull"
-    effect = "Allow"
+    sid     = "ECRPull"
+    effect  = "Allow"
     actions = [
       "ecr:GetAuthorizationToken",
     ]
@@ -30,8 +30,8 @@ data "aws_iam_policy_document" "ec2_policy" {
   }
 
   statement {
-    sid    = "ECRImages"
-    effect = "Allow"
+    sid     = "ECRImages"
+    effect  = "Allow"
     actions = [
       "ecr:BatchCheckLayerAvailability",
       "ecr:GetDownloadUrlForLayer",
@@ -42,8 +42,8 @@ data "aws_iam_policy_document" "ec2_policy" {
   }
 
   statement {
-    sid    = "SSMParameters"
-    effect = "Allow"
+    sid     = "SSMParameters"
+    effect  = "Allow"
     actions = [
       "ssm:GetParameter",
       "ssm:GetParameters",
@@ -53,8 +53,8 @@ data "aws_iam_policy_document" "ec2_policy" {
   }
 
   statement {
-    sid    = "DynamoDBData"
-    effect = "Allow"
+    sid     = "DynamoDBData"
+    effect  = "Allow"
     actions = [
       "dynamodb:DescribeTable",
       "dynamodb:GetItem",
@@ -79,8 +79,8 @@ data "aws_iam_policy_document" "ec2_policy" {
   }
 
   statement {
-    sid    = "Logs"
-    effect = "Allow"
+    sid     = "Logs"
+    effect  = "Allow"
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
@@ -120,8 +120,8 @@ resource "aws_iam_role" "lambda" {
 
 data "aws_iam_policy_document" "lambda_policy" {
   statement {
-    sid    = "Logs"
-    effect = "Allow"
+    sid     = "Logs"
+    effect  = "Allow"
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
@@ -131,8 +131,8 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 
   statement {
-    sid    = "AnomalyWrites"
-    effect = "Allow"
+    sid     = "AnomalyWrites"
+    effect  = "Allow"
     actions = [
       "dynamodb:PutItem",
       "dynamodb:UpdateItem",
@@ -200,8 +200,8 @@ data "aws_iam_policy_document" "ci_policy" {
   }
 
   statement {
-    sid    = "ECRPush"
-    effect = "Allow"
+    sid     = "ECRPush"
+    effect  = "Allow"
     actions = [
       "ecr:BatchCheckLayerAvailability",
       "ecr:InitiateLayerUpload",
@@ -214,8 +214,8 @@ data "aws_iam_policy_document" "ci_policy" {
   }
 
   statement {
-    sid    = "SSMDeploy"
-    effect = "Allow"
+    sid     = "SSMDeploy"
+    effect  = "Allow"
     actions = [
       "ssm:SendCommand",
       "ssm:GetCommandInvocation",
