@@ -1,0 +1,54 @@
+{{define "content"}}
+<section class="access-stage" aria-labelledby="login-title">
+  <div class="access-door">
+    <header class="access-bar">
+      <span class="access-bar-left"><span class="status-dot" aria-hidden="true"></span> Secure console</span>
+      <span class="access-bar-right mono">Node 01 · v{{.Version}}</span>
+    </header>
+
+    <div class="access-inner">
+      <div class="access-brand">
+        <span class="brand-mark brand-mark--lg" aria-hidden="true"><span></span><span></span><span></span></span>
+        <div>
+          <p class="access-wordmark">RateGuard</p>
+          <p class="access-sub">Rate limiting / cost control</p>
+        </div>
+      </div>
+
+      <div class="access-copy">
+        <p class="eyebrow">Administrator access</p>
+        <h1 id="login-title">Badge in to the control plane.</h1>
+        <p class="access-lede">This surface manages tenants, limit buckets, and AWS spend anomalies. Authenticate with the admin API key issued to your deployment.</p>
+      </div>
+
+      {{if .Error}}
+      <div class="alert alert--danger" role="alert">
+        <span class="alert-mark" aria-hidden="true"></span>
+        <span>{{.Error}}</span>
+      </div>
+      {{end}}
+
+      <form class="login-form" method="post" action="/login">
+        <input type="hidden" name="next" value="{{.Next}}">
+        <div class="field">
+          <label for="admin-key">Admin API key</label>
+          <input class="input" id="admin-key" name="key" type="password" autocomplete="current-password" required autofocus spellcheck="false" aria-describedby="login-note">
+          <p class="field-hint" id="login-note">Tenant keys beginning <code>ag_live_</code> cannot sign in here.</p>
+        </div>
+        <button class="btn btn--primary btn--block btn--tall" type="submit">Unlock console</button>
+      </form>
+
+      <div class="access-meta">
+        <span><span class="meta-label">Auth</span> Admin key</span>
+        <span><span class="meta-label">Transport</span> Same-origin session</span>
+        {{if .DevMode}}<span class="badge badge--warn">Dev mode</span>{{end}}
+      </div>
+    </div>
+
+    <footer class="access-foot">
+      <span>Unauthorized access is denied and logged.</span>
+      <span class="mono">RATEGUARD // ADMIN</span>
+    </footer>
+  </div>
+</section>
+{{end}}

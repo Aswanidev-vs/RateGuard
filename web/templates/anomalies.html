@@ -1,0 +1,44 @@
+{{define "content"}}
+<header class="page-heading">
+  <p class="eyebrow">Spend watch / AWS billing</p>
+  <div class="page-heading-row">
+    <h1>Cost anomaly log</h1>
+    <p class="page-stamp"><span class="status-dot status-dot--amber" aria-hidden="true"></span> Hourly detector</p>
+  </div>
+  <p class="lede">Estimated charges compared against a seven-day rolling baseline. High spend deviations alert through SNS and land here.</p>
+</header>
+
+<section class="signal-strip" aria-label="Detection parameters">
+  <div class="signal-item">
+    <span class="signal-index" aria-hidden="true">01</span>
+    <div><span class="signal-label">Cadence</span><strong>Every hour</strong></div>
+  </div>
+  <div class="signal-item">
+    <span class="signal-index" aria-hidden="true">02</span>
+    <div><span class="signal-label">Rule</span><strong>&gt; baseline + 2σ or 1.5× baseline</strong></div>
+  </div>
+  <div class="signal-item">
+    <span class="signal-index" aria-hidden="true">03</span>
+    <div><span class="signal-label">Delivery</span><strong>SNS alert + dashboard record</strong></div>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="anomaly-list-title">
+  <header class="panel-head">
+    <div>
+      <p class="eyebrow">Findings</p>
+      <h2 id="anomaly-list-title">Anomaly records</h2>
+    </div>
+    <div class="panel-actions">
+      <span class="htmx-indicator hint" id="anomaly-loading" role="status">Refreshing&hellip;</span>
+      <button class="btn btn--ghost btn--small" type="button"
+              hx-get="/dashboard/partials/anomalies"
+              hx-target="#anomaly-list"
+              hx-swap="outerHTML"
+              hx-indicator="#anomaly-loading">Refresh log</button>
+    </div>
+  </header>
+
+  {{template "anomaly_list" .}}
+</section>
+{{end}}

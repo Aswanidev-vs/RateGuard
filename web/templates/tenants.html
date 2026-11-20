@@ -1,0 +1,92 @@
+{{define "content"}}
+<header class="page-heading">
+  <p class="eyebrow">Registry / tenant control</p>
+  <div class="page-heading-row">
+    <h1>Tenants &amp; keys</h1>
+    <p class="page-stamp"><span class="mono">{{len .Tenants}}</span> registered</p>
+  </div>
+  <p class="lede">Provision API keys, tune token buckets, and disable traffic without a deploy.</p>
+</header>
+
+<section class="panel create-panel" aria-labelledby="create-tenant-title">
+  <header class="panel-head">
+    <div>
+      <p class="eyebrow">Provision</p>
+      <h2 id="create-tenant-title">New tenant</h2>
+    </div>
+    <span class="badge badge--neutral">Key shown once</span>
+  </header>
+
+  <form class="create-form" method="post" action="/dashboard/tenants"
+        hx-post="/dashboard/tenants"
+        hx-target="#tenant-created"
+        hx-swap="innerHTML">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <div class="form-grid">
+      <div class="field">
+        <label for="tenant-name">Tenant name</label>
+        <input class="input" id="tenant-name" name="name" type="text" maxlength="120" required autocomplete="organization" placeholder="Acme Labs">
+      </div>
+      <div class="field">
+        <label for="tenant-email">Contact email</label>
+        <input class="input" id="tenant-email" name="email" type="email" maxlength="254" required autocomplete="email" placeholder="ops@acme.example">
+      </div>
+      <div class="field">
+        <label for="tenant-limit">Limit rpm</label>
+        <input class="input" id="tenant-limit" name="limit_rpm" type="number" min="1" step="1" inputmode="numeric" required placeholder="60" aria-describedby="tenant-limit-hint">
+        <p class="field-hint" id="tenant-limit-hint">Sustained requests per minute. Refill is this rate divided by 60.</p>
+      </div>
+      <div class="field">
+        <label for="tenant-burst">Burst capacity</label>
+        <input class="input" id="tenant-burst" name="burst" type="number" min="1" step="1" inputmode="numeric" required placeholder="10" aria-describedby="tenant-burst-hint">
+        <p class="field-hint" id="tenant-burst-hint">Maximum tokens available at once; also the first-flight allowance.</p>
+      </div>
+    </div>
+    <div class="form-actions">
+      <p class="hint">The full API key appears once after creation. Copy it before leaving the page.</p>
+      <button class="btn btn--primary" type="submit">Create tenant</button>
+    </div>
+  </form>
+
+  <div id="tenant-created" class="created-slot" aria-live="polite"></div>
+</section>
+
+<section class="panel" aria-labelledby="tenant-table-title">
+  <header class="panel-head">
+    <div>
+      <p class="eyebrow">Live registry</p>
+      <h2 id="tenant-table-title">Tenant ledger</h2>
+    </div>
+    <p class="hint">Save a row to PATCH limits and state. Delete performs a soft-disable.</p>
+  </header>
+
+  <div class="table-wrap">
+    <table class="data-table tenant-table" id="tenants-table">
+      <thead>
+        <tr>
+          <th scope="col">Tenant</th>
+          <th scope="col">Key prefix</th>
+          <th scope="col" class="cell-number">Limit rpm</th>
+          <th scope="col" class="cell-number">Burst</th>
+          <th scope="col">Enabled</th>
+          <th scope="col" class="cell-number">Allowed 24h</th>
+          <th scope="col" class="cell-number">Blocked 24h</th>
+          <th scope="col" class="cell-number">Avg</th>
+          <th scope="col" class="cell-number">P95</th>
+          <th scope="col" class="cell-actions"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="tenants-body"
+             hx-get="/dashboard/partials/tenants"
+             hx-trigger="tenantCreated from:body"
+             hx-swap="innerHTML">
+        {{template "tenants_table_body" .}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{{if .DemoEnabled}}
+{{template "demo_panel" .}}
+{{end}}
+{{end}}

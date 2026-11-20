@@ -1,0 +1,19 @@
+{{define "content"}}
+<section class="access-stage" aria-labelledby="error-title">
+  <div class="access-door">
+    <header class="access-bar">
+      <span class="access-bar-left"><span class="status-dot status-dot--amber" aria-hidden="true"></span> RateGuard</span>
+      <span class="access-bar-right mono">{{.Status}}</span>
+    </header>
+    <div class="access-inner">
+      <div class="access-copy">
+        <p class="eyebrow">Request could not be completed</p>
+        <h1 id="error-title">{{.Title}}</h1>
+        <p class="access-lede">{{.Message}}</p>
+      </div>
+      <a class="btn btn--primary btn--block btn--tall" href="{{if .Authenticated}}/dashboard{{else}}/login{{end}}">Return to console</a>
+    </div>
+    <footer class="access-foot"><span>Reference this status code when reporting an issue.</span><span class="mono">RATEGUARD // {{.Status}}</span></footer>
+  </div>
+</section>
+{{end}}

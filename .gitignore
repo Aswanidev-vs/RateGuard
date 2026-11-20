@@ -1,0 +1,39 @@
+# Build artifacts
+/bin/
+/build/
+/dist/
+*.exe
+*.test
+*.out
+coverage.*
+*.prof
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/crash.log
+terraform/tfplan
+terraform/*.auto.tfvars
+terraform/backend.hcl
+terraform/bootstrap/.terraform/
+terraform/bootstrap/*.tfstate
+terraform/bootstrap/*.tfstate.*
+terraform/bootstrap/terraform.tfstate.backup
+
+# Logs and OS noise
+*.log
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/

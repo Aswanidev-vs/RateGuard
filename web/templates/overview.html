@@ -1,0 +1,156 @@
+{{define "content"}}
+{{$total := add64 .Stats.Allowed24h .Stats.Blocked24h}}
+<header class="page-heading">
+  <p class="eyebrow">Control plane / trailing 24 hours</p>
+  <div class="page-heading-row">
+    <h1>Operations overview</h1>
+    <p class="page-stamp"><span class="status-dot" aria-hidden="true"></span> Live fleet snapshot</p>
+  </div>
+  <p class="lede">Rate-limit decisions, latency, tenant posture, and AWS spend anomalies in one place.</p>
+</header>
+
+<section class="stat-grid" aria-label="Fleet summary">
+  <article class="stat-card stat-card--hero">
+    <div class="stat-head">
+      <p class="stat-label">Allowed requests <span class="stat-window">/ 24h</span></p>
+      <span class="badge badge--ok">Passed</span>
+    </div>
+    <p class="stat-value">{{humanCount .Stats.Allowed24h}}</p>
+    <p class="stat-exact"><span class="num">{{.Stats.Allowed24h}}</span> requests cleared</p>
+    <div class="stat-meter">
+      <progress value="{{.Stats.Allowed24h}}" max="{{if gt $total 0}}{{$total}}{{else}}1{{end}}" aria-label="Allowed share of all requests">{{.Stats.Allowed24h}} of {{$total}}</progress>
+      <p class="meter-caption">
+        <span>{{pct (pctOf .Stats.Allowed24h $total)}} allowed</span>
+        <span class="mono">{{pct .Stats.BlockRatePct}} blocked</span>
+      </p>
+    </div>
+    <p class="stat-foot">Across {{.Stats.EnabledTenants}} enabled tenant{{if ne .Stats.EnabledTenants 1}}s{{end}}.</p>
+  </article>
+
+  <article class="stat-card stat-card--3 stat-card--danger">
+    <div class="stat-head">
+      <p class="stat-label">Blocked <span class="stat-window">/ 24h</span></p>
+      <span class="badge badge--blocked">429</span>
+    </div>
+    <p class="stat-value">{{humanCount .Stats.Blocked24h}}</p>
+    <p class="stat-foot">Requests shed by token buckets before reaching upstream.</p>
+  </article>
+
+  <article class="stat-card stat-card--4">
+    <div class="stat-head">
+      <p class="stat-label">Block rate</p>
+      <span class="stat-corner" aria-hidden="true"></span>
+    </div>
+    <p class="stat-value">{{pct .Stats.BlockRatePct}}</p>
+    <progress class="progress--thin" value="{{.Stats.BlockRatePct}}" max="100" aria-label="Block rate">{{pct .Stats.BlockRatePct}}</progress>
+    <p class="stat-foot">Share of all decisions that returned a limit response.</p>
+  </article>
+
+  <article class="stat-card stat-card--3">
+    <div class="stat-head">
+      <p class="stat-label">Avg latency</p>
+      <span class="stat-corner" aria-hidden="true"></span>
+    </div>
+    <p class="stat-value"><span class="num">{{printf "%.1f" .Stats.AvgLatencyMs}}</span><span class="stat-unit">ms</span></p>
+    <p class="stat-foot">Mean proxy overhead across the fleet.</p>
+  </article>
+
+  <article class="stat-card stat-card--4">
+    <div class="stat-head">
+      <p class="stat-label">P95 latency</p>
+      <span class="stat-corner" aria-hidden="true"></span>
+    </div>
+    <p class="stat-value"><span class="num">{{.Stats.P95Ms}}</span><span class="stat-unit">ms</span></p>
+    <p class="stat-foot">Ninety-five percent of requests complete below this mark.</p>
+  </article>
+
+  <article class="stat-card stat-card--6">
+    <div class="stat-head">
+      <p class="stat-label">Tenant posture</p>
+      <span class="badge badge--neutral">{{.Stats.TenantCount}} total</span>
+    </div>
+    <p class="stat-value"><span class="num">{{.Stats.EnabledTenants}}</span><span class="stat-unit">enabled</span></p>
+    <p class="stat-foot">{{.Stats.TenantCount}} registered in total, including disabled or soft-deleted entries.</p>
+  </article>
+
+  <a class="stat-card stat-card--6 stat-card--link" href="/dashboard/anomalies">
+    <div class="stat-head">
+      <p class="stat-label">Cost anomalies</p>
+      {{if gt .Stats.AnomalyCount 0}}<span class="badge badge--warn">Review</span>{{else}}<span class="badge badge--ok">Quiet</span>{{end}}
+    </div>
+    <p class="stat-value"><span class="num">{{.Stats.AnomalyCount}}</span><span class="stat-unit">{{if eq .Stats.AnomalyCount 1}}finding{{else}}findings{{end}}</span></p>
+    <p class="stat-foot">Open the anomaly log for spend deltas and alert state.</p>
+  </a>
+</section>
+
+<section class="panel" aria-labelledby="top-tenants-title">
+  <header class="panel-head">
+    <div>
+      <p class="eyebrow">Traffic ledger</p>
+      <h2 id="top-tenants-title">Top tenants</h2>
+    </div>
+    <a class="text-link" href="/dashboard/tenants">All tenants</a>
+  </header>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Tenant</th>
+          <th scope="col">State</th>
+          <th scope="col" class="cell-number">Limit rpm</th>
+          <th scope="col" class="cell-number">Allowed 24h</th>
+          <th scope="col" class="cell-number">Blocked 24h</th>
+          <th scope="col" class="cell-number">P95</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{if .Tenants}}
+        {{range $i, $t := .Tenants}}
+        <tr>
+          <td class="cell-tenant">
+            <span class="row-index" aria-hidden="true">{{add $i 1}}</span>
+            <span class="avatar" aria-hidden="true">{{initial .Tenant.Name}}</span>
+            <span class="tenant-meta">
+              <strong>{{.Tenant.Name}}</strong>
+              <small>{{.Tenant.Email}}</small>
+            </span>
+          </td>
+          <td>
+            {{if .Tenant.Enabled}}<span class="badge badge--ok">Enabled</span>{{else}}<span class="badge badge--blocked">Disabled</span>{{end}}
+          </td>
+          <td class="cell-number"><span class="num">{{.Tenant.LimitRPM}}</span></td>
+          <td class="cell-number"><span class="num">{{humanCount .Allowed24h}}</span></td>
+          <td class="cell-number"><span class="num{{if gt .Blocked24h 0}} num--bad{{end}}">{{humanCount .Blocked24h}}</span></td>
+          <td class="cell-number"><span class="num">{{.P95Ms}}</span> <span class="unit">ms</span></td>
+        </tr>
+        {{end}}
+        {{else}}
+        <tr>
+          <td class="table-empty" colspan="6">
+            <span class="empty-mark" aria-hidden="true"></span>
+            <strong>No tenants yet</strong>
+            <span>Provision a tenant to start metering traffic.</span>
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel panel--anomalies" aria-labelledby="recent-anomalies-title">
+  <header class="panel-head">
+    <div>
+      <p class="eyebrow">Spend watch</p>
+      <h2 id="recent-anomalies-title">Recent anomalies</h2>
+    </div>
+    <a class="text-link" href="/dashboard/anomalies">Open anomaly log</a>
+  </header>
+  {{template "anomaly_list" .}}
+</section>
+
+{{if .DemoEnabled}}
+{{template "demo_panel" .}}
+{{end}}
+{{end}}

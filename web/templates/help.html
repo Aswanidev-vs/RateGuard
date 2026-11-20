@@ -1,0 +1,81 @@
+{{define "content"}}
+<header class="page-heading">
+  <p class="eyebrow">Reference / operator runbook</p>
+  <div class="page-heading-row">
+    <h1>Operator guide</h1>
+    <p class="page-stamp"><span class="status-dot" aria-hidden="true"></span> Control plane</p>
+  </div>
+  <p class="lede">How to issue keys, prove the limiter works, and read the signals on this dashboard.</p>
+</header>
+
+<section class="panel" aria-labelledby="help-limit-title">
+  <header class="panel-head">
+    <div><p class="eyebrow">01 / Limiting</p><h2 id="help-limit-title">Token buckets in practice</h2></div>
+  </header>
+  <div class="help-grid">
+    <article>
+      <h3>What the numbers mean</h3>
+      <p><strong>Limit rpm</strong> is the sustained rate. The bucket refills at <code>limit_rpm / 60</code> tokens each second. <strong>Burst</strong> is the bucket capacity: the number of requests that can pass back-to-back after an idle period.</p>
+      <p>Every admitted request consumes one token. When no token is available, RateGuard answers <code>429 Too Many Requests</code> with <code>Retry-After</code>, <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>.</p>
+    </article>
+    <article>
+      <h3>Key handling</h3>
+      <p>Tenant keys start with <code>ag_live_</code> and are shown once at creation. RateGuard stores only a SHA-256 hash and a short lookup prefix, so a lost key cannot be recovered — issue a new tenant or rotate it.</p>
+      <p>Send the key as <code>Authorization: Bearer &lt;key&gt;</code> (or <code>X-API-Key</code>). The dashboard signs in with the separate <strong>admin key</strong>; tenant keys cannot unlock the console.</p>
+    </article>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="help-curl-title">
+  <header class="panel-head">
+    <div><p class="eyebrow">02 / Smoke test</p><h2 id="help-curl-title">Prove it from a shell</h2></div>
+  </header>
+  <pre class="code-block">KEY=ag_live_your_key_here
+for i in $(seq 1 120); do
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -H "Authorization: Bearer $KEY" \
+    http://localhost/proxy/quote
+done
+# Expect the first `burst` requests to pass, then 429s.</pre>
+  <p class="hint">One request returns a random quote from the demo upstream. The flood above should produce a run of <code>200</code>s followed by <code>429</code>s; <code>Retry-After</code> tells the client when to come back.</p>
+</section>
+
+<section class="panel" aria-labelledby="help-demo-title">
+  <header class="panel-head">
+    <div><p class="eyebrow">03 / Sandbox</p><h2 id="help-demo-title">Use the quote sandbox</h2></div>
+  </header>
+  <div class="help-grid">
+    <article>
+      <h3>Flood sequence</h3>
+      <ol class="help-steps">
+        <li>Create a tenant with a small burst (for example 10) on the <a class="text-link" href="/dashboard/tenants">Tenants</a> page.</li>
+        <li>Copy the one-time key into the sandbox panel on the overview page.</li>
+        <li>Press <strong>Send 1 request</strong> and note <code>X-RateLimit-Remaining</code>.</li>
+        <li>Press <strong>Flood 200 requests</strong>. The blocked counter climbs and <code>Retry-After</code> appears.</li>
+        <li>Watch usage counters settle after the next flush interval.</li>
+      </ol>
+    </article>
+    <article>
+      <h3>Reading cost anomalies</h3>
+      <p>An hourly worker compares the AWS account's <code>EstimatedCharges</code> metric against a seven-day rolling baseline. A finding is recorded when spend exceeds <code>baseline + 2σ</code> or <code>1.5 × baseline</code>, deduplicated per UTC hour, and published to SNS.</p>
+      <p>Billing data is account-wide, so findings are attached to the reserved <code>__account__</code> scope rather than an individual tenant. Inject a synthetic spike during a demo by setting <code>COST_FAKE_CURRENT</code> and <code>COST_FAKE_HISTORY</code> on the Lambda.</p>
+    </article>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="help-ops-title">
+  <header class="panel-head">
+    <div><p class="eyebrow">04 / Operations</p><h2 id="help-ops-title">Health and limits</h2></div>
+  </header>
+  <div class="help-grid">
+    <article>
+      <h3>Endpoints</h3>
+      <p><code>GET /healthz</code> is liveness. <code>GET /readyz</code> checks the backing store. Admin API routes live under <code>/api/v1</code> and require the admin key.</p>
+    </article>
+    <article>
+      <h3>Known v1 boundaries</h3>
+      <p>Token buckets live in process memory and reset on restart. Usage is flushed in batches; a hard kill may lose the final batch. Latency percentiles are approximated from fixed histogram buckets. These trade-offs keep the deployment inside the free tier.</p>
+    </article>
+  </div>
+</section>
+{{end}}

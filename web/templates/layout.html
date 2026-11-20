@@ -1,0 +1,101 @@
+{{define "layout.html"}}
+<!doctype html>
+<html lang="en" hx-headers='{"X-CSRF-Token":"{{.CSRF}}"}'>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{.CSRF}}">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0c1110">
+  <meta name="description" content="RateGuard control plane — rate limiting, tenant usage, and AWS cost anomalies.">
+  <title>{{.Title}} · RateGuard</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body class="{{if .Authenticated}}app-authed{{else}}app-guest{{end}}" hx-headers='{"X-CSRF-Token":"{{.CSRF}}"}'>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  {{if .Authenticated}}
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/dashboard" aria-label="RateGuard overview">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-text">
+          <strong>RateGuard</strong>
+          <small>Control plane</small>
+        </span>
+      </a>
+
+      <nav class="side-nav" aria-label="Dashboard sections">
+        <p class="nav-label">Operations</p>
+        <a class="nav-link{{if eq .Active "overview"}} is-active{{end}}" href="/dashboard"{{if eq .Active "overview"}} aria-current="page"{{end}}>
+          <span class="nav-index" aria-hidden="true">01</span>
+          <span class="nav-text">Overview</span>
+          <span class="nav-tick" aria-hidden="true"></span>
+        </a>
+        <a class="nav-link{{if eq .Active "tenants"}} is-active{{end}}" href="/dashboard/tenants"{{if eq .Active "tenants"}} aria-current="page"{{end}}>
+          <span class="nav-index" aria-hidden="true">02</span>
+          <span class="nav-text">Tenants</span>
+          <span class="nav-tick" aria-hidden="true"></span>
+        </a>
+        <a class="nav-link{{if eq .Active "anomalies"}} is-active{{end}}" href="/dashboard/anomalies"{{if eq .Active "anomalies"}} aria-current="page"{{end}}>
+          <span class="nav-index" aria-hidden="true">03</span>
+          <span class="nav-text">Cost anomalies</span>
+          <span class="nav-tick" aria-hidden="true"></span>
+        </a>
+        <a class="nav-link{{if eq .Active "help"}} is-active{{end}}" href="/dashboard/help"{{if eq .Active "help"}} aria-current="page"{{end}}>
+          <span class="nav-index" aria-hidden="true">04</span>
+          <span class="nav-text">Operator help</span>
+          <span class="nav-tick" aria-hidden="true"></span>
+        </a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <p class="session-line"><span class="status-dot" aria-hidden="true"></span> Session authenticated</p>
+        <form class="logout-form" method="post" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+          <button class="btn btn--ghost btn--small btn--block" type="submit">Sign out</button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="app-body">
+      <header class="topbar">
+        <p class="crumbs">
+          <span class="crumbs-root">RateGuard</span>
+          <span class="crumbs-sep" aria-hidden="true">/</span>
+          <span class="crumbs-current">{{.Title}}</span>
+        </p>
+        <div class="topbar-meta">
+          {{if .DevMode}}<span class="badge badge--warn">Dev mode</span>{{end}}
+          <time class="topbar-clock" data-clock aria-hidden="true">--:--:--</time>
+          <span class="session-tag">Admin</span>
+        </div>
+      </header>
+
+      <main id="main" class="main" tabindex="-1">
+        {{template "content" .}}
+      </main>
+
+      <footer class="app-footer">
+        <span class="footer-brand">RateGuard <span class="mono">v{{.Version}}</span></span>
+        <span class="footer-note">Rate limiting &amp; AWS cost anomaly control plane</span>
+        <span class="footer-rule" aria-hidden="true"></span>
+      </footer>
+    </div>
+  </div>
+  {{else}}
+  <main id="main" class="guest-main" tabindex="-1">
+    {{template "content" .}}
+  </main>
+  <footer class="guest-footer">
+    <span class="footer-brand">RateGuard <span class="mono">v{{.Version}}</span></span>
+    <span class="footer-note">{{if .DevMode}}Development mode{{else}}Restricted operator surface{{end}}</span>
+  </footer>
+  {{end}}
+
+  {{template "toast" .}}
+</body>
+</html>
+{{end}}
