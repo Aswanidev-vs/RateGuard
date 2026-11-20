@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="RateGuard is a self-hosted, multi-tenant rate limiting proxy with AWS cost anomaly detection and an operator dashboard.">
+  <title>RateGuard — Protect your APIs. Control usage. Keep costs in check.</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="#top" aria-label="RateGuard home">
+        <img src="logo.png" alt="RateGuard" width="180" height="30">
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="#product">Product <span class="caret" aria-hidden="true"></span></a>
+        <a href="#how">Solutions <span class="caret" aria-hidden="true"></span></a>
+        <a href="#get-started">Pricing</a>
+        <a href="terraform/TERRAFORM-GUIDE.md">Docs</a>
+        <a href="#product">Company</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="#get-started">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-sky" aria-hidden="true">
+        <span class="sun-glow"></span>
+        <svg class="ridge ridge-far" viewBox="0 0 1440 320" preserveAspectRatio="none" focusable="false">
+          <path d="M0 250 L120 180 L220 215 L350 120 L470 205 L610 150 L740 230 L880 140 L1010 210 L1150 130 L1290 205 L1440 160 L1440 320 L0 320 Z"/>
+        </svg>
+        <svg class="ridge ridge-near" viewBox="0 0 1440 260" preserveAspectRatio="none" focusable="false">
+          <path d="M0 190 L150 120 L290 175 L430 95 L560 170 L700 110 L860 185 L1000 120 L1140 180 L1290 110 L1440 170 L1440 260 L0 260 Z"/>
+        </svg>
+        <span class="window-light"></span>
+      </div>
+
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <a class="beta-pill" href="#cost">
+            <span class="beta-tag">Beta</span>
+            <span>Now supporting AWS cost anomaly detection</span>
+            <span aria-hidden="true">›</span>
+          </a>
+
+          <h1 id="hero-title">Protect your APIs.<br>Control usage.<br><span>Keep costs in check.</span></h1>
+
+          <p class="hero-lede">
+            A developer-friendly, multi-tenant rate limiting service with built-in AWS cost
+            anomaly detection. Deploy, protect, monitor — all in one place.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-large" href="#get-started">Get Started Free <span aria-hidden="true">→</span></a>
+            <a class="btn btn-outline btn-large" href="https://github.com/Aswanidev-vs/RateGuard">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" fill="currentColor"/></svg>
+              View on GitHub
+            </a>
+          </div>
+
+          <ul class="hero-tags" aria-label="Capabilities">
+            <li><span class="tag-mark" aria-hidden="true"></span>Rate Limiting</li>
+            <li><span class="tag-mark" aria-hidden="true"></span>Usage Analytics</li>
+            <li><span class="tag-mark" aria-hidden="true"></span>AWS Cost Alerts</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual" aria-label="RateGuard dashboard preview">
+          <div class="console">
+            <div class="console-top">
+              <img src="logo.png" alt="" width="110" height="20">
+              <span class="console-live"><span class="live-dot" aria-hidden="true"></span> Live</span>
+            </div>
+
+            <div class="console-body">
+              <aside class="console-nav" aria-hidden="true">
+                <span class="console-nav-item is-active">Dashboard</span>
+                <span class="console-nav-item">Tenants</span>
+                <span class="console-nav-item">API Keys</span>
+                <span class="console-nav-item">Usage</span>
+                <span class="console-nav-item">Cost Alerts</span>
+                <span class="console-nav-item">Settings</span>
+              </aside>
+
+              <div class="console-main">
+                <div class="console-heading">
+                  <div>
+                    <strong>Dashboard</strong>
+                    <small>Overview of your APIs, usage and AWS costs</small>
+                  </div>
+                  <span class="console-range">Last 24 hours</span>
+                </div>
+
+                <div class="console-stats">
+                  <div class="metric">
+                    <span class="metric-label">Total Requests</span>
+                    <strong>124,320</strong>
+                    <span class="delta delta-up">↑ 12.4%</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Blocked (Rate Limited)</span>
+                    <strong>3,892</strong>
+                    <span class="delta delta-down">↑ 8.1%</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Active Tenants</span>
+                    <strong>14</strong>
+                    <span class="metric-note">2 added this week</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Cost Anomalies</span>
+                    <strong>1</strong>
+                    <span class="metric-note">Needs review</span>
+                  </div>
+                </div>
+
+                <div class="console-charts">
+                  <div class="chart-card">
+                    <div class="chart-title">
+                      <strong>Request Traffic</strong>
+                      <span class="legend"><i class="dot dot-teal"></i>Allowed <i class="dot dot-orange"></i>Blocked</span>
+                    </div>
+                    <svg class="line-chart" viewBox="0 0 360 150" preserveAspectRatio="none" role="img" aria-label="Allowed and blocked request trend">
+                      <defs>
+                        <linearGradient id="trafficFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#12a389" stop-opacity=".35"/>
+                          <stop offset="100%" stop-color="#12a389" stop-opacity="0"/>
+                        </linearGradient>
+                      </defs>
+                      <g class="grid">
+                        <line x1="0" y1="20" x2="360" y2="20"/>
+                        <line x1="0" y1="55" x2="360" y2="55"/>
+                        <line x1="0" y1="90" x2="360" y2="90"/>
+                        <line x1="0" y1="125" x2="360" y2="125"/>
+                      </g>
+                      <path class="area" d="M0 100 L30 92 L60 96 L90 78 L120 82 L150 68 L180 72 L210 55 L240 60 L270 42 L300 48 L330 32 L360 38 L360 125 L0 125 Z"/>
+                      <polyline class="line-allowed" points="0,100 30,92 60,96 90,78 120,82 150,68 180,72 210,55 240,60 270,42 300,48 330,32 360,38"/>
+                      <polyline class="line-blocked" points="0,118 30,116 60,119 90,114 120,116 150,112 180,114 210,109 240,112 270,107 300,110 330,104 360,107"/>
+                      <g class="axis"><text x="0" y="140">00:00</text><text x="120" y="140">08:00</text><text x="240" y="140">16:00</text><text x="330" y="140">23:00</text></g>
+                    </svg>
+                  </div>
+
+                  <div class="chart-card">
+                    <div class="chart-title"><strong>AWS Spend (USD)</strong><span class="chart-expand" aria-hidden="true">↗</span></div>
+                    <strong class="spend-value">$12.48</strong>
+                    <span class="delta delta-down">↑ 62% above baseline</span>
+                    <div class="bar-chart" aria-hidden="true">
+                      <span style="--h:24%"></span><span style="--h:32%"></span><span style="--h:28%"></span>
+                      <span style="--h:38%"></span><span style="--h:45%"></span><span style="--h:40%"></span>
+                      <span style="--h:52%"></span><span style="--h:61%"></span><span style="--h:55%"></span>
+                      <span style="--h:70%"></span><span style="--h:84%"></span><span style="--h:100%"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features section-light" id="product" aria-labelledby="features-title">
+      <div class="section-shell">
+        <div class="section-head">
+          <h2 id="features-title">Why RateGuard?</h2>
+          <p>All the essentials you need to run APIs safely, fairly, and cost-effectively.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9.5 12l1.8 1.8 3.4-3.6"/></svg>
+            </span>
+            <h3>Rate Limiting as a Service</h3>
+            <p>Token bucket based, per-tenant limits with burst support. Protect your APIs from abuse and unexpected spikes.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M10 19V5M15 19v-7M20 19V7"/></svg>
+            </span>
+            <h3>Multi-Tenant &amp; Scalable</h3>
+            <p>Onboard multiple customers, issue API keys, and configure quotas independently.</p>
+          </article>
+
+          <article class="feature-card" id="cost">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 11.5 3.3 3.3 0 0 0 7 18z"/><path d="M10 15l2-3 2 3"/></svg>
+            </span>
+            <h3>AWS Cost Anomaly Detection</h3>
+            <p>Keep an eye on your AWS spend. Get alerted when costs deviate from your usual patterns.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/></svg>
+            </span>
+            <h3>Developer Friendly</h3>
+            <p>Simple APIs, clear docs, and a lightweight Go-based proxy you can self-host or run on AWS.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how section-mist" id="how" aria-labelledby="how-title">
+      <div class="section-shell how-shell">
+        <div class="how-copy">
+          <h2 id="how-title">How it works</h2>
+          <p>Drop RateGuard in front of your API, set a limit, and start monitoring usage and costs — in minutes.</p>
+          <a class="text-link" href="docker/DOCKER-GUIDE.md">Read the quick start <span aria-hidden="true">→</span></a>
+        </div>
+
+        <div class="flow" aria-label="RateGuard request flow">
+          <div class="flow-node">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11h4M17 15h4"/></svg>
+            <strong>Your Clients</strong>
+            <small>Apps, users, scripts</small>
+          </div>
+
+          <span class="flow-arrow" aria-hidden="true">→</span>
+
+          <div class="flow-node flow-node-brand">
+            <img src="logo.png" alt="" width="120" height="24">
+            <strong>RateGuard</strong>
+            <small>Rate limit · Validate · Monitor</small>
+          </div>
+
+          <span class="flow-arrow" aria-hidden="true">→</span>
+
+          <div class="flow-node">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
+            <strong>Your API</strong>
+            <small>Upstream service</small>
+          </div>
+
+          <span class="flow-plus" aria-hidden="true">+</span>
+
+          <div class="flow-node">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 11.5 3.3 3.3 0 0 0 7 18z"/><path d="M9 20h6"/></svg>
+            <strong>Cost Monitoring</strong>
+            <small>CloudWatch + Alerts</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" id="get-started" aria-labelledby="cta-title">
+      <div class="cta-inner">
+        <span class="eyebrow">Open source · Self-hosted</span>
+        <h2 id="cta-title">Start with one tenant. See the first 429 in minutes.</h2>
+        <p>Run it locally with Go, or bring up the full stack with Docker. AWS deployment is documented step by step.</p>
+        <div class="cta-actions">
+          <a class="btn btn-primary btn-large" href="docker/DOCKER-GUIDE.md">Get Started Free <span aria-hidden="true">→</span></a>
+          <a class="btn btn-outline btn-large" href="https://github.com/Aswanidev-vs/RateGuard">View on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo.png" alt="RateGuard" width="140" height="24">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="docker/DOCKER-GUIDE.md">Docker</a>
+        <a href="terraform/TERRAFORM-GUIDE.md">Terraform</a>
+        <a href="SECURITY-AUDIT.md">Security</a>
+        <a href="../README.md">README</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>

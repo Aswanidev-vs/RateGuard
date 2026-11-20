@@ -212,6 +212,7 @@ flowchart TD
 | `terraform/` | Root AWS stack + `bootstrap/` for remote state |
 | `deploy/Caddyfile` | Edge proxy configuration used by compose |
 | `.github/workflows/ci.yml` | Test → validate → scan/push → SSM deploy |
+| `docs/index.html`, `docs/styles.css`, `docs/script.js` | Static marketing landing page (open `docs/index.html`) |
 | `docs/docker/`, `docs/terraform/` | Operator guides you execute manually |
 | `docs/UI-DESIGN.md`, `docs/SECURITY-AUDIT.md` | Design retrofit and security audit reports |
 
