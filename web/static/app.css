@@ -69,7 +69,7 @@ code { font-size: .92em; color: var(--mint); }
   border-radius: var(--radius); padding: 8px;
 }
 .brand-plate img {
-  display: block; width: 100%; height: 64px; object-fit: cover; object-position: center;
+  display: block; width: 100%; height: 64px; object-fit: contain; object-position: center;
   border-radius: 2px;
 }
 .brand-plate--sidebar img { height: 40px; }

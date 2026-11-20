@@ -37,7 +37,7 @@ Applied the `frontend-design` skill's Retrofit workflow to the embedded dashboar
 
 ## Brand asset note
 
-The brand asset now lives at `web/static/logo.png` and is embedded into the binary by `web/render.go`. The palette was derived from it (navy neutrals, teal signal, orange warning). Because the PNG has a white background, it is shown inside a deliberate light "brand plate" on the login screen and in the dashboard sidebar rather than floating on the dark surfaces. `README.md` also renders the same file at the top.
+The brand asset now lives at `web/static/logo.png` and is embedded into the binary by `web/render.go`. The palette was derived from it (navy neutrals, teal signal, orange warning). The PNG was cropped to its visible alpha bounds so it has no empty padding in the README preview, and it is shown inside a deliberate light "brand plate" on the login screen and in the dashboard sidebar rather than floating on the dark surfaces. `README.md` renders the same file at the top.
 
 ## Verification
 

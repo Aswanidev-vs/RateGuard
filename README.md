@@ -1,4 +1,6 @@
-![RateGuard](web/static/logo.png)
+<p align="center">
+  <img src="web/static/logo.png" alt="RateGuard" width="520">
+</p>
 
 # RateGuard
 
