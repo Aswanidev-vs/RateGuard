@@ -3,7 +3,7 @@
   <div class="access-door">
     <header class="access-bar">
       <span class="access-bar-left"><span class="status-dot" aria-hidden="true"></span> Secure console</span>
-      <span class="access-bar-right mono">Node 01 · v{{.Version}}</span>
+      <span class="access-bar-right mono">v{{.Version}}</span>
     </header>
 
     <div class="access-inner">
@@ -17,8 +17,8 @@
 
       <div class="access-copy">
         <p class="eyebrow">Administrator access</p>
-        <h1 id="login-title">Badge in to the control plane.</h1>
-        <p class="access-lede">This surface manages tenants, limit buckets, and AWS spend anomalies. Authenticate with the admin API key issued to your deployment.</p>
+        <h1 id="login-title">Operator sign in</h1>
+        <p class="access-lede">Manage tenants, token buckets, and AWS spend alerts with the admin key issued to this deployment.</p>
       </div>
 
       {{if .Error}}
@@ -35,7 +35,7 @@
           <input class="input" id="admin-key" name="key" type="password" autocomplete="current-password" required autofocus spellcheck="false" aria-describedby="login-note">
           <p class="field-hint" id="login-note">Tenant keys beginning <code>ag_live_</code> cannot sign in here.</p>
         </div>
-        <button class="btn btn--primary btn--block btn--tall" type="submit">Unlock console</button>
+        <button class="btn btn--primary btn--block btn--tall" type="submit">Sign in</button>
       </form>
 
       <div class="access-meta">
@@ -47,7 +47,7 @@
 
     <footer class="access-foot">
       <span>Unauthorized access is denied and logged.</span>
-      <span class="mono">RATEGUARD // ADMIN</span>
+      <span class="mono">RateGuard admin</span>
     </footer>
   </div>
 </section>

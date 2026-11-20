@@ -30,22 +30,18 @@
       <nav class="side-nav" aria-label="Dashboard sections">
         <p class="nav-label">Operations</p>
         <a class="nav-link{{if eq .Active "overview"}} is-active{{end}}" href="/dashboard"{{if eq .Active "overview"}} aria-current="page"{{end}}>
-          <span class="nav-index" aria-hidden="true">01</span>
           <span class="nav-text">Overview</span>
           <span class="nav-tick" aria-hidden="true"></span>
         </a>
         <a class="nav-link{{if eq .Active "tenants"}} is-active{{end}}" href="/dashboard/tenants"{{if eq .Active "tenants"}} aria-current="page"{{end}}>
-          <span class="nav-index" aria-hidden="true">02</span>
           <span class="nav-text">Tenants</span>
           <span class="nav-tick" aria-hidden="true"></span>
         </a>
         <a class="nav-link{{if eq .Active "anomalies"}} is-active{{end}}" href="/dashboard/anomalies"{{if eq .Active "anomalies"}} aria-current="page"{{end}}>
-          <span class="nav-index" aria-hidden="true">03</span>
           <span class="nav-text">Cost anomalies</span>
           <span class="nav-tick" aria-hidden="true"></span>
         </a>
         <a class="nav-link{{if eq .Active "help"}} is-active{{end}}" href="/dashboard/help"{{if eq .Active "help"}} aria-current="page"{{end}}>
-          <span class="nav-index" aria-hidden="true">04</span>
           <span class="nav-text">Operator help</span>
           <span class="nav-tick" aria-hidden="true"></span>
         </a>
