@@ -1,6 +1,7 @@
 // Command demo is a tiny "Quote of the Day" HTTP upstream used behind the
-// RateGuard proxy during local demos. It has no external dependencies, no
-// secrets, and logs no request headers.
+// RateGuard proxy during local demos. It lives under examples/ because it is a
+// runnable sample, not a core RateGuard application. It has no external
+// dependencies, no secrets, and logs no request headers.
 package main
 
 import (

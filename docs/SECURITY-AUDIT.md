@@ -28,7 +28,7 @@ Source-first audit of the RateGuard codebase, performed with the `security-audit
 | SEC-03 | Medium | The login/admin `AttemptLimiter` bounded expired entries but could grow without limit when every source IP still had a live window — a memory-exhaustion vector from spoofed or rotating `X-Forwarded-For` values. | Added eviction of an existing entry when the 8192-key cap is reached (`internal/auth/attempts.go`). |
 | SEC-04 | Medium (IaC) | The GitHub OIDC deploy role allowed `ssm:SendCommand` against any EC2 instance ARN. | Scoped the resource to `aws_instance.app.arn` in `terraform/iam.tf`. |
 | SEC-05 | Low | Rendered error pages could be cached by an intermediate proxy, potentially replaying a stale error or page shell. | `renderError` now sets `Cache-Control: no-store`. |
-| SEC-06 | Low | The demo upstream set nosniff/frame/referrer headers but no CSP. | Added `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'` to `cmd/demo`. |
+| SEC-06 | Low | The demo upstream set nosniff/frame/referrer headers but no CSP. | Added `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'` to `examples/quote`. |
 | SEC-07 | Informational | Admin key, session secret, and generated session secret are stored in Terraform state as well as SSM. No source change can avoid this while Terraform creates the SSM parameters. | Documented: private encrypted versioned state bucket, gitignored `backend.hcl`/`*.tfvars`, option to pass secrets via `TF_VAR_*`. |
 
 ## Verified controls (no finding)

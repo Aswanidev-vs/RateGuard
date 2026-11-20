@@ -2,7 +2,7 @@
 
 # RateGuard image: one final image with both binaries.
 #   /app/rateguard -> cmd/server (API + dashboard)
-#   /app/demo      -> cmd/demo   (quote upstream for local demos)
+#   /app/demo      -> examples/quote (quote upstream for local demos)
 
 ARG VERSION=dev
 ARG COMMIT=none
@@ -32,7 +32,7 @@ RUN mkdir -p /out \
       -trimpath \
       -buildvcs=false \
       -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" \
-      -o /out/demo ./cmd/demo
+      -o /out/demo ./examples/quote
 
 # ---------- runtime ----------
 FROM gcr.io/distroless/static-debian12:nonroot

@@ -27,7 +27,7 @@ EventBridge (hourly) ──> Lambda ──> CloudWatch billing ──> DynamoDB 
 |---|---|
 | `cmd/server` | API, proxy, and dashboard entrypoint (`-healthcheck` flag for containers) |
 | `cmd/lambda` | Scheduled cost anomaly detector (fake-mode via `COST_FAKE_*`) |
-| `cmd/demo` | "Quote of the day" upstream used by the proxy demo |
+| `examples/quote` | "Quote of the day" example upstream used by the proxy demo |
 | `internal/limiter`, `internal/auth` | Token bucket, API/admin keys, rate-limited login |
 | `internal/store`, `internal/usage` | In-memory + DynamoDB persistence, batched usage writer |
 | `internal/server` | chi router, middleware, admin API, proxy, dashboard handlers |
