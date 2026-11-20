@@ -1,0 +1,44 @@
+# VCS / CI / infra: never needed to compile the app.
+.git
+.gitignore
+.github
+terraform
+deploy
+
+# Docs and container orchestration files.
+docs
+*.md
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Local secrets and generated material.
+.env
+.env.*
+*.pem
+*.key
+
+# Build output and local caches.
+bin
+build
+dist
+coverage
+coverage.*
+*.test
+*.out
+*.prof
+*.log
+tmp
+node_modules
+
+# Tests are not needed for `go build`.
+**/*_test.go
+
+# Editor / OS noise (including the stray Windows `nul` file).
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+nul
+
+# Keep: go.mod, go.sum, cmd/, internal/, web/ (embedded assets).
