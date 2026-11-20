@@ -82,6 +82,33 @@
   </a>
 </section>
 
+<section class="panel decision-panel" aria-labelledby="decision-title">
+  <header class="panel-head">
+    <div>
+      <p class="eyebrow">Proxy decisions · trailing 24h</p>
+      <h2 id="decision-title">Allowed vs blocked</h2>
+    </div>
+    <span class="window-tag">token bucket</span>
+  </header>
+  <div class="decision-body">
+    <div class="decision-meters">
+      <div>
+        <span>Allowed <span class="num">{{humanCount .Stats.Allowed24h}}</span></span>
+        <progress value="{{.Stats.Allowed24h}}" max="{{if gt $total 0}}{{$total}}{{else}}1{{end}}" aria-label="Allowed share">{{.Stats.Allowed24h}}</progress>
+      </div>
+      <div>
+        <span>Blocked <span class="num num--bad">{{humanCount .Stats.Blocked24h}}</span></span>
+        <progress class="progress--blocked" value="{{.Stats.Blocked24h}}" max="{{if gt $total 0}}{{$total}}{{else}}1{{end}}" aria-label="Blocked share">{{.Stats.Blocked24h}}</progress>
+      </div>
+    </div>
+    <pre class="header-spec">HTTP/1.1 429 Too Many Requests
+Retry-After: 12
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1784628120</pre>
+  </div>
+</section>
+
 <section class="panel" aria-labelledby="top-tenants-title">
   <header class="panel-head">
     <div>

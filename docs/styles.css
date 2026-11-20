@@ -190,6 +190,31 @@ button { font: inherit; }
 .bar-chart span { flex: 1; background: #1c7f6e; border-radius: 2px 2px 0 0; height: var(--h); }
 .bar-chart span:nth-last-child(-n+3) { background: var(--teal); }
 
+.console-trace {
+  margin-top: 8px; padding: 12px; background: #0f1f28;
+  border: 1px solid rgba(255, 255, 255, .07); border-radius: 6px;
+}
+.trace-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.trace-head strong { color: #dce8e6; font-size: 10px; }
+.trace-head code { color: #8fa6af; font-family: var(--mono); font-size: 9px; }
+.trace-rows { margin-top: 8px; }
+.trace-row {
+  display: grid; grid-template-columns: 34px 1fr auto auto; gap: 8px; align-items: center;
+  padding: 5px 0; border-top: 1px solid rgba(255, 255, 255, .05);
+  color: #8fa6af; font-family: var(--mono); font-size: 9px;
+}
+.trace-row code { color: #b9cbd0; }
+.trace-status { font-weight: 700; }
+.status-ok { color: #6dddb8; }
+.status-limited { color: #ff9a72; }
+.http-block {
+  margin: 10px 0 0; padding: 10px; background: #08141b;
+  border-left: 2px solid var(--teal); border-radius: 0 4px 4px 0;
+  color: #9fb4bc; font-family: var(--mono); font-size: 9px; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+}
+.http-block span { display: block; color: #ff9a72; margin-bottom: 4px; }
+
 /* Sections */
 .section-shell { max-width: 1200px; margin: 0 auto; padding: 88px 28px; }
 .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 40px; }
@@ -209,12 +234,25 @@ button { font: inherit; }
 .feature-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .feature-card h3 { margin-top: 18px; font-size: 16px; letter-spacing: -.01em; }
 .feature-card p { margin-top: 10px; color: var(--muted); font-size: 14px; }
+.feature-card p code { color: var(--teal-dark); font-family: var(--mono); font-size: 12px; }
+.feature-code {
+  display: inline-block; margin-top: 16px; padding: 6px 10px;
+  background: var(--teal-soft); color: var(--teal-dark); border-radius: 4px;
+  font-family: var(--mono); font-size: 11px;
+}
 
 /* How it works */
 .section-mist { background: var(--mist); border-top: 1px solid #dde9e3; border-bottom: 1px solid #dde9e3; }
 .how-shell { display: grid; grid-template-columns: .72fr 1.28fr; gap: 48px; align-items: center; }
 .how-copy p { margin-top: 16px; color: var(--muted); max-width: 38ch; }
 .text-link { display: inline-block; margin-top: 20px; color: var(--teal-dark); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--teal); }
+.endpoint-list { margin-top: 24px; border-top: 1px solid #cdded6; }
+.endpoint-list div {
+  display: flex; gap: 12px; align-items: baseline; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid #cdded6;
+}
+.endpoint-list code { font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+.endpoint-list span { color: var(--muted); font-size: 11px; text-align: right; }
 .flow { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; }
 .flow-node {
   flex: 1 1 120px; min-width: 120px; background: #fff; border: 1px solid var(--line);
@@ -236,6 +274,21 @@ button { font: inherit; }
 .cta h2 { margin-top: 16px; font-size: clamp(30px, 4vw, 48px); line-height: 1.1; letter-spacing: -.03em; }
 .cta p { margin: 18px auto 0; color: var(--on-dark-muted); max-width: 58ch; }
 .cta-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.cta-terminal {
+  position: relative; max-width: 620px; margin: 32px auto 0; text-align: left;
+  background: #07131d; border: 1px solid rgba(255, 255, 255, .12); border-radius: var(--radius);
+  padding: 16px;
+}
+.cta-terminal pre {
+  margin: 0; padding-right: 72px; color: #9fe6cf;
+  font-family: var(--mono); font-size: 12px; white-space: pre-wrap; word-break: break-word;
+}
+.copy-btn {
+  position: absolute; top: 12px; right: 12px; min-height: 32px; padding: 6px 10px;
+  background: transparent; color: var(--on-dark-muted); border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 4px; font-size: 11px; cursor: pointer;
+}
+.copy-btn:hover { color: #fff; border-color: #fff; }
 .site-footer { background: #07131d; color: var(--on-dark-muted); padding: 36px 28px; }
 .footer-shell { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
 .footer-shell img { filter: brightness(0) invert(1); opacity: .9; }

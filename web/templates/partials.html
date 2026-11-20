@@ -149,6 +149,11 @@
           <div><dt>Baseline</dt><dd class="num">{{printf "$%.2f" .Baseline}}</dd></div>
           <div><dt>Threshold</dt><dd class="num">{{printf "$%.2f" .Threshold}}</dd></div>
         </dl>
+        <div class="anomaly-compare">
+          <span>Baseline <progress value="{{.Baseline}}" max="{{if gt .Value 0}}{{.Value}}{{else}}1{{end}}"></progress></span>
+          <span>Threshold <progress value="{{.Threshold}}" max="{{if gt .Value 0}}{{.Value}}{{else}}1{{end}}"></progress></span>
+          <span>Current <progress class="progress--current" value="{{.Value}}" max="{{if gt .Value 0}}{{.Value}}{{else}}1{{end}}"></progress></span>
+        </div>
       </div>
       <div class="anomaly-meta">
         <time class="anomaly-time" datetime="{{.DetectedAt}}">{{timeShort .DetectedAt}}</time>
@@ -216,10 +221,23 @@
         <div><dt>Allowed</dt><dd class="num" id="demo-allowed">—</dd></div>
         <div><dt>Blocked</dt><dd class="num num--bad" id="demo-blocked">—</dd></div>
         <div><dt>P95</dt><dd><span class="num" id="demo-p95">—</span><span class="unit">ms</span></dd></div>
-        <div><dt>Remaining</dt><dd class="num" id="demo-remaining">—</dd></div>
+        <div><dt>Remaining</dt><dd><span class="num" id="demo-remaining">—</span><span class="unit"> / <span id="demo-limit">—</span></span></dd></div>
       </dl>
+
+      <div class="demo-bucket">
+        <div class="bucket-head"><span>Token bucket</span><span class="mono">remaining / limit</span></div>
+        <progress id="demo-bucket" value="1" max="1">1 / 1</progress>
+      </div>
+
       <div class="demo-endpoint"><span class="status-dot" aria-hidden="true"></span><code>GET /proxy/quote</code></div>
       <pre class="demo-quote" id="demo-quote" tabindex="0">Awaiting first request.</pre>
+
+      <div class="demo-protocol">
+        <div class="bucket-head"><span>Response headers</span><span class="mono">latest</span></div>
+        <pre id="demo-headers" class="header-readout">HTTP/1.1 —</pre>
+      </div>
+
+      <ol id="demo-feed" class="feed-list" aria-label="Recent proxy decisions"></ol>
     </div>
   </div>
 

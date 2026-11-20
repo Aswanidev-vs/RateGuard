@@ -70,7 +70,17 @@ done
   <div class="help-grid">
     <article>
       <h3>Endpoints</h3>
-      <p><code>GET /healthz</code> is liveness. <code>GET /readyz</code> checks the backing store. Admin API routes live under <code>/api/v1</code> and require the admin key.</p>
+      <p><code>ANY /proxy/*</code> is the rate-limited passthrough. <code>POST /api/v1/tenants</code> issues keys; <code>GET /api/v1/tenants/{id}/usage</code> returns <code>allowed</code>, <code>blocked</code>, <code>avg_latency_ms</code>, and <code>p95_ms</code>. <code>/healthz</code> is liveness, <code>/readyz</code> checks the store.</p>
+      <table class="help-table">
+        <caption>Response headers on <code>/proxy/*</code></caption>
+        <thead><tr><th scope="col">Header</th><th scope="col">Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>X-RateLimit-Limit</code></td><td>Bucket capacity for this tenant</td></tr>
+          <tr><td><code>X-RateLimit-Remaining</code></td><td>Whole tokens left after this request</td></tr>
+          <tr><td><code>X-RateLimit-Reset</code></td><td>Epoch seconds until the bucket is full</td></tr>
+          <tr><td><code>Retry-After</code></td><td>Seconds until one token is available (429 only)</td></tr>
+        </tbody>
+      </table>
     </article>
     <article>
       <h3>Known v1 boundaries</h3>

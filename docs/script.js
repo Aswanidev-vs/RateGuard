@@ -30,6 +30,18 @@
     });
   }
 
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var target = document.getElementById(button.getAttribute("data-copy"));
+      if (!target || !navigator.clipboard) return;
+      navigator.clipboard.writeText(target.textContent || "").then(function () {
+        var original = button.textContent;
+        button.textContent = "Copied";
+        window.setTimeout(function () { button.textContent = original; }, 1600);
+      }).catch(function () { /* clipboard may be unavailable on file:// */ });
+    });
+  });
+
   var year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());
 })();

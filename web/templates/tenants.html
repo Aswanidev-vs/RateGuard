@@ -20,7 +20,8 @@
   <form class="create-form" method="post" action="/dashboard/tenants"
         hx-post="/dashboard/tenants"
         hx-target="#tenant-created"
-        hx-swap="innerHTML">
+        hx-swap="innerHTML"
+        hx-indicator="#tenant-loading">
     <input type="hidden" name="csrf_token" value="{{.CSRF}}">
     <div class="form-grid">
       <div class="field">
@@ -44,6 +45,7 @@
     </div>
     <div class="form-actions">
       <p class="hint">The full API key appears once after creation. Copy it before leaving the page.</p>
+      <span class="htmx-indicator hint" id="tenant-loading" role="status">Creating tenant…</span>
       <button class="btn btn--primary" type="submit">Create tenant</button>
     </div>
   </form>

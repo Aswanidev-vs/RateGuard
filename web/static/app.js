@@ -65,12 +65,56 @@
     return true;
   }
 
+  function applyResponseHeaders(response, feedLimited) {
+    var bucket = document.getElementById("demo-bucket");
+    var headersEl = document.getElementById("demo-headers");
+    var limit = parseInt(response.headers.get("X-RateLimit-Limit"), 10);
+    var remaining = parseInt(response.headers.get("X-RateLimit-Remaining"), 10);
+    var retry = response.headers.get("Retry-After");
+
+    if (bucket && !isNaN(limit) && limit > 0) {
+      bucket.max = limit;
+      bucket.value = !isNaN(remaining) ? Math.min(Math.max(remaining, 0), limit) : 0;
+    }
+    if (!isNaN(remaining)) { putText("demo-remaining", String(remaining)); }
+    if (!isNaN(limit)) { putText("demo-limit", String(limit)); }
+
+    if (headersEl) {
+      var lines = ["HTTP/1.1 " + response.status + " " + (response.statusText || "")];
+      if (!isNaN(limit)) { lines.push("X-RateLimit-Limit: " + limit); }
+      if (!isNaN(remaining)) { lines.push("X-RateLimit-Remaining: " + remaining); }
+      if (retry) { lines.push("Retry-After: " + retry); }
+      headersEl.textContent = lines.join("\n");
+    }
+    if (feedLimited && response.status === 429) {
+      pushFeed(response.status, retry ? "Retry-After " + retry + "s" : "rate limited");
+    }
+  }
+
+  function pushFeed(status, detail) {
+    var feed = document.getElementById("demo-feed");
+    if (!feed) { return; }
+    var row = document.createElement("li");
+    row.className = "feed-row" + (status >= 400 ? " feed-row--bad" : "");
+    var code = document.createElement("span");
+    code.className = "feed-status";
+    code.textContent = String(status);
+    var text = document.createElement("span");
+    text.textContent = detail || "";
+    row.appendChild(code);
+    row.appendChild(text);
+    feed.insertBefore(row, feed.firstChild);
+    while (feed.children.length > 6) { feed.removeChild(feed.lastChild); }
+  }
+
   function showQuote(response) {
     var target = document.getElementById("demo-quote");
     if (!target) { return; }
     var remaining = response.headers.get("X-RateLimit-Remaining");
     var limit = response.headers.get("X-RateLimit-Limit");
     var retry = response.headers.get("Retry-After");
+    applyResponseHeaders(response, false);
+    pushFeed(response.status, response.status === 429 ? (retry ? "Retry-After " + retry + "s" : "rate limited") : "allowed");
 
     if (!response.ok) {
       var detail = "";
@@ -127,6 +171,7 @@
       next += 1;
       return requestWithTimeout("/proxy/quote", { headers: headers, cache: "no-store" })
         .then(function (response) {
+          applyResponseHeaders(response, true);
           if (response.status === 200) { counts.ok += 1; }
           else if (response.status === 429) {
             counts.limited += 1;
