@@ -2,6 +2,9 @@
 
 # RateGuard
 
+> [!WARNING]
+> **This project is not production ready. Do not deploy it to production or use it to protect real traffic or sensitive data.** It is a learning/portfolio implementation with single-instance in-memory rate-limit state, no high availability, no authenticated encryption at rest beyond AWS defaults, and known simplification documented below. Use it for local demos and controlled AWS free-tier exercises only.
+
 Multi-tenant API rate limiting (token bucket) plus AWS cost anomaly detection, with a small operator dashboard. Built with Go, chi, DynamoDB, Docker, and Terraform.
 
 > **Status:** implementation and configuration are complete in this repository. No Docker build, Terraform apply, or AWS deployment was run by the coding agent. The Docker and Terraform sections are yours to execute; the guides contain every command.
