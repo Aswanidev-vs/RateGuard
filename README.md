@@ -243,6 +243,8 @@ go run ./cmd/server
 
 `go run` does not read `.env` files — export the variables in your shell (Docker Compose does read `.env` via `env_file`).
 
+> **If the browser says `localhost refused to connect`, you opened port 80.** A plain `go run` serves on **8080**: use `http://localhost:8080/healthz` and `http://localhost:8080/dashboard`. Port 80 is only exposed when you run the Docker Compose stack, where Caddy forwards to the app. If `127.0.0.1:8080/healthz` still refuses, confirm the Go process is still running and check `netstat -ano | findstr :8080`.
+
 In a **second terminal**, start the demo upstream:
 
 ```bash
