@@ -263,12 +263,12 @@ func (d *Dynamo) AddUsage(ctx context.Context, entries []model.UsageEntry) error
 			"#ttl":   "ttl",
 		}
 		values := map[string]dynamodbtypes.AttributeValue{
-			":updated_at":  stringAttribute(updatedAt),
-			":ttl":         numberAttribute(ttl),
-			":allowed":     numberAttribute(strconv.FormatInt(e.Allowed, 10)),
-			":blocked":     numberAttribute(strconv.FormatInt(e.Blocked, 10)),
-			":count":       numberAttribute(strconv.FormatInt(e.Count, 10)),
-			":sum_latency": numberAttribute(strconv.FormatInt(e.SumLatencyMs, 10)),
+			":updated_at":     stringAttribute(updatedAt),
+			":ttl":            numberAttribute(ttl),
+			":allowed":        numberAttribute(strconv.FormatInt(e.Allowed, 10)),
+			":blocked":        numberAttribute(strconv.FormatInt(e.Blocked, 10)),
+			":count":          numberAttribute(strconv.FormatInt(e.Count, 10)),
+			":sum_latency_ms": numberAttribute(strconv.FormatInt(e.SumLatencyMs, 10)),
 		}
 		expression := updateExpression
 		if e.LatencyBucket != "" {
