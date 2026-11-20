@@ -122,6 +122,7 @@ From `G:\RateGuard\terraform`:
 docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest init -backend-config=backend.hcl
 docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest fmt -check
 docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest validate
+# If fmt -check reports files, run `terraform fmt -recursive` from terraform/ and commit the result.
 docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest plan -out=tfplan
 docker run --rm -v "/$PWD:/workspace" -w /workspace hashicorp/terraform:latest apply tfplan
 ```
