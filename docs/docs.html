@@ -52,10 +52,10 @@
           <p>Build the multi-stage distroless image, run the compose stack, configure Caddy, and clean up with <code>docker compose down -v</code>.</p>
           <code class="feature-code">docker compose up -d --build</code>
         </a>
-        <a class="doc-card" href="terraform.html">
-          <h2>AWS deployment</h2>
-          <p>Bootstrap remote state, apply the Terraform stack, push the first ECR image, wire GitHub Actions, and test the cost anomaly Lambda.</p>
-          <code class="feature-code">terraform apply</code>
+        <a class="doc-card" href="aws.html">
+          <h2>AWS deployment runbook</h2>
+          <p>Copy-paste guide for Terraform in Docker: credentials, state bootstrap, apply, first ECR push, verification, anomaly test, and teardown.</p>
+          <code class="feature-code">docs/AWS-DEPLOYMENT-GUIDE.md</code>
         </a>
         <a class="doc-card" href="security.html">
           <h2>Security audit</h2>
@@ -104,7 +104,7 @@
       <nav aria-label="Footer">
         <a href="quickstart.html">Quick start</a>
         <a href="docker.html">Docker</a>
-        <a href="terraform.html">Terraform</a>
+        <a href="aws.html">AWS deployment</a>
         <a href="docs.html">Docs</a>
       </nav>
       <small>© <span id="year">2026</span> RateGuard</small>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Step-by-step AWS deployment runbook for RateGuard using Terraform in Docker.">
+  <title>AWS deployment runbook — RateGuard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="index.html" aria-label="RateGuard home"><img src="logo-dark.png" alt="RateGuard"></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="nav-toggle-label">Menu</span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+        <a href="index.html#product">Features</a>
+        <a href="index.html#how">How it works</a>
+        <a href="quickstart.html">Quick start</a>
+        <a href="docs.html" class="is-active">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-quiet" href="http://localhost:8080/dashboard">Sign in</a>
+        <a class="btn btn-primary btn-small" href="quickstart.html">Get Started <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="docs.html">Docs</a> / AWS deployment</p>
+        <h1>Deploy RateGuard to AWS</h1>
+        <p>Terraform runs in Docker; you run every command. This provisions EC2, DynamoDB, ECR, SSM, SNS, a cost-anomaly Lambda, and the GitHub OIDC deploy role in <code>ap-south-1</code>.</p>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <p class="note">Learning project, not production ready. Use a disposable account, keep SSH disabled, and tear everything down when finished.</p>
+
+      <section class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h2>Prerequisites and credentials</h2>
+          <p>You need an AWS account with VPC/EC2/IAM/DynamoDB/S3/ECR/SSM/SNS/CloudWatch/Lambda rights, AWS CLI v2, Docker Desktop, and Go 1.27+.</p>
+          <div class="code-panel">
+            <div class="code-label">Verify identity</div>
+            <button class="code-copy" type="button" data-copy="aws-whoami">Copy</button>
+            <pre id="aws-whoami">aws sts get-caller-identity
+aws sso login --profile &lt;your-profile&gt;   # if you use SSO</pre>
+          </div>
+          <p>Terraform runs in a container and must see your AWS credentials. Mount <code>~/.aws</code> and pass the profile:</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash — Terraform wrapper</div>
+            <button class="code-copy" type="button" data-copy="tf-wrapper">Copy</button>
+            <pre id="tf-wrapper">docker run --rm \
+  -v "$HOME/.aws:/root/.aws:ro" \
+  -v "/$PWD:/workspace" -w /workspace \
+  -e AWS_PROFILE \
+  hashicorp/terraform:1.9.8 &lt;terraform command&gt;</pre>
+          </div>
+          <p class="hint">PowerShell uses <code>-v "${HOME}\.aws:/root/.aws:ro"</code> and backticks for line continuation. Static keys can be passed with <code>-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY</code> instead of mounting.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h2>Create the GitHub OIDC provider once</h2>
+          <p>Actions assumes an AWS role without a stored key. Create the provider in IAM → Identity providers if it does not already exist.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="oidc">Copy</button>
+            <pre id="oidc">THUMBPRINT=$(openssl s_client -servername token.actions.githubusercontent.com \
+  -connect token.actions.githubusercontent.com:443 -showcerts &lt;/dev/null 2&gt;/dev/null \
+  | openssl x509 -fingerprint -sha1 -noout \
+  | cut -d= -f2 | tr -d ':' | tr 'A-Z' 'a-z')
+
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com \
+  --thumbprint-list "$THUMBPRINT"</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">3</span>
+        <div>
+          <h2>Build the Lambda binary</h2>
+          <p>Terraform needs a real <code>build/bootstrap</code> file at plan time. Build it for linux/arm64 from the repository root.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="lambda-build">Copy</button>
+            <pre id="lambda-build">mkdir -p build
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 \
+  go build -trimpath -o build/bootstrap ./cmd/lambda</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">4</span>
+        <div>
+          <h2>Bootstrap remote state</h2>
+          <p>From <code>terraform/bootstrap/</code>, create the S3 state bucket and DynamoDB lock table, then write <code>terraform/backend.hcl</code> using the outputs.</p>
+          <div class="code-panel">
+            <div class="code-label">terraform/bootstrap — wrapper from step 1</div>
+            <button class="code-copy" type="button" data-copy="bootstrap">Copy</button>
+            <pre id="bootstrap">&lt;TF&gt; init
+&lt;TF&gt; apply -var='bucket_name=rateguard-tfstate' -var='region=ap-south-1'
+&lt;TF&gt; output -raw state_bucket
+&lt;TF&gt; output -raw lock_table</pre>
+          </div>
+          <div class="code-panel">
+            <div class="code-label">terraform/backend.hcl</div>
+            <pre>bucket         = "PASTE_STATE_BUCKET_OUTPUT"
+key            = "rateguard/dev/terraform.tfstate"
+region         = "ap-south-1"
+encrypt        = true
+dynamodb_table = "PASTE_LOCK_TABLE_OUTPUT"</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">5</span>
+        <div>
+          <h2>Set secrets and variables</h2>
+          <p>Copy <code>terraform.tfvars.example</code> to <code>terraform.tfvars</code>, set an email for SNS, and leave <code>domain_name</code> and <code>allowed_ssh_cidr</code> empty for the first run. Supply secrets as environment variables.</p>
+          <div class="code-panel">
+            <div class="code-label">Git Bash</div>
+            <button class="code-copy" type="button" data-copy="tfvars">Copy</button>
+            <pre id="tfvars">cp terraform.tfvars.example terraform/terraform.tfvars
+export TF_VAR_admin_api_key="$(openssl rand -base64 48)"
+export TF_VAR_session_secret="$(openssl rand -base64 48)"</pre>
+          </div>
+          <p class="note">Save the admin key — it is the dashboard password. It is also stored in SSM and in Terraform state; keep both private.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">6</span>
+        <div>
+          <h2>Plan and apply</h2>
+          <p>Run from <code>terraform/</code>. For a first deploy, create ECR first, push an image, then apply the rest.</p>
+          <div class="code-panel">
+            <div class="code-label">terraform/</div>
+            <button class="code-copy" type="button" data-copy="apply">Copy</button>
+            <pre id="apply">&lt;TF&gt; init -backend-config=backend.hcl
+&lt;TF&gt; fmt -check
+&lt;TF&gt; validate
+&lt;TF&gt; apply -target=aws_ecr_repository.app
+# push the first image (step 7)
+&lt;TF&gt; plan -out=tfplan
+&lt;TF&gt; apply tfplan</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">7</span>
+        <div>
+          <h2>Push the first image to ECR</h2>
+          <div class="code-panel">
+            <div class="code-label">Repository root</div>
+            <button class="code-copy" type="button" data-copy="ecr-push">Copy</button>
+            <pre id="ecr-push">ECR=$(cd terraform &amp;&amp; &lt;TF&gt; output -raw ecr_repository_url)
+aws ecr get-login-password --region ap-south-1 \
+  | docker login --username AWS --password-stdin "$ECR"
+docker build -t rateguard:bootstrap .
+docker tag rateguard:bootstrap "$ECR:latest"
+docker push "$ECR:latest"</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">8</span>
+        <div>
+          <h2>Verify and smoke test</h2>
+          <div class="code-panel">
+            <div class="code-label">Host shell</div>
+            <button class="code-copy" type="button" data-copy="verify">Copy</button>
+            <pre id="verify">cd terraform
+&lt;TF&gt; output
+IP=$(&lt;TF&gt; output -raw ec2_public_ip)
+curl -s http://$IP/healthz
+curl -s http://$IP/readyz
+aws ssm get-parameter --name /rateguard/admin-api-key \
+  --with-decryption --query Parameter.Value --output text</pre>
+          </div>
+          <p>Open the <code>dashboard_url</code> output, sign in with that key, create a tenant, then send 120 requests to <code>/proxy/quote</code>. Expect 200s up to the burst, then 429 with <code>Retry-After</code>.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">9</span>
+        <div>
+          <h2>Test the cost anomaly worker</h2>
+          <p>Inject fake spend, invoke the hourly Lambda, confirm the anomaly and SNS email, then re-apply to restore real settings.</p>
+          <div class="code-panel">
+            <div class="code-label">Host shell</div>
+            <button class="code-copy" type="button" data-copy="anomaly">Copy</button>
+            <pre id="anomaly">aws lambda update-function-configuration \
+  --function-name rateguard-dev-cost-anomaly \
+  --environment 'Variables={AWS_REGION=ap-south-1,COST_BILLING_REGION=us-east-1,COST_FAKE_CURRENT=9.5,COST_FAKE_HISTORY=1.1,1.2,1.0,1.3,1.1,1.2,1.0,DYNAMODB_TENANTS_TABLE=api_guard_tenants,DYNAMODB_USAGE_TABLE=api_guard_usage,DYNAMODB_ANOMALIES_TABLE=api_guard_cost_anomalies,SNS_TOPIC_ARN=&lt;topic-arn&gt;,COST_METRIC_NAME=EstimatedCharges}'
+aws lambda invoke --function-name rateguard-dev-cost-anomaly /tmp/rateguard-lambda.json
+cat /tmp/rateguard-lambda.json</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="step">
+        <span class="step-num">10</span>
+        <div>
+          <h2>Wire GitHub Actions and tear down</h2>
+          <p>Set repository variables <code>AWS_ROLE_ARN</code>, <code>ECR_REPOSITORY_URL</code>, <code>EC2_INSTANCE_ID</code>, and <code>PUBLIC_HEALTH_URL</code> from Terraform outputs. Then push to <code>main</code>.</p>
+          <div class="code-panel">
+            <div class="code-label">Teardown</div>
+            <button class="code-copy" type="button" data-copy="destroy">Copy</button>
+            <pre id="destroy">cd terraform &amp;&amp; &lt;TF&gt; destroy
+cd bootstrap &amp;&amp; &lt;TF&gt; destroy</pre>
+          </div>
+          <a class="btn btn-primary next-link" href="docs.html">Back to docs <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-shell">
+      <img src="logo-dark.png" alt="RateGuard">
+      <p>Learning project — not production ready.</p>
+      <nav aria-label="Footer">
+        <a href="quickstart.html">Quick start</a>
+        <a href="docker.html">Docker</a>
+        <a href="aws.html">AWS deployment</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+      <small>© <span id="year">2026</span> RateGuard</small>
+    </div>
+  </footer>
+</body>
+</html>

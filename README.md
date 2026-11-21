@@ -213,6 +213,7 @@ flowchart TD
 | `deploy/Caddyfile` | Edge proxy configuration used by compose |
 | `.github/workflows/ci.yml` | Test → validate → scan/push → SSM deploy |
 | `docs/index.html`, `docs/styles.css`, `docs/script.js` | Static marketing landing page (open `docs/index.html`) |
+| `docs/AWS-DEPLOYMENT-GUIDE.md`, `docs/aws.html` | Detailed AWS deployment runbook (Markdown + web page) |
 | `docs/docker/`, `docs/terraform/` | Operator guides you execute manually |
 | `docs/UI-DESIGN.md`, `docs/SECURITY-AUDIT.md` | Design retrofit and security audit reports |
 
@@ -297,7 +298,7 @@ Dashboard: `http://localhost/dashboard`. Full commands, PowerShell alternatives,
 3. Push the first image to ECR; CI handles later pushes.
 4. Set repository variables `AWS_ROLE_ARN`, `ECR_REPOSITORY_URL`, `EC2_INSTANCE_ID`, `PUBLIC_HEALTH_URL`, then push to `main`.
 
-Step-by-step commands, outputs, the fake-spend anomaly test, rollback, and destroy are in **[docs/terraform/TERRAFORM-GUIDE.md](docs/terraform/TERRAFORM-GUIDE.md)**.
+A copy-paste operator runbook — credentials, OIDC, state bootstrap, apply, first ECR push, verification, fake-spend test, CI variables, rollback, and teardown — is in **[docs/AWS-DEPLOYMENT-GUIDE.md](docs/AWS-DEPLOYMENT-GUIDE.md)**. The styled web version is **[docs/aws.html](docs/aws.html)**. File-by-file Terraform explanations are in **[docs/terraform/TERRAFORM-EXPLAINED.md](docs/terraform/TERRAFORM-EXPLAINED.md)**.
 
 ---
 
