@@ -3,7 +3,7 @@
   <div class="access-door">
     <header class="access-bar">
       <span class="access-bar-left"><span class="status-dot status-dot--amber" aria-hidden="true"></span> RateGuard</span>
-      <span class="access-bar-right mono">{{.Status}}</span>
+      <span class="access-bar-right"><span class="badge badge--warn">{{.Status}}</span></span>
     </header>
     <div class="access-inner">
       <div class="access-copy">
@@ -13,7 +13,7 @@
       </div>
       <a class="btn btn--primary btn--block btn--tall" href="{{if .Authenticated}}/dashboard{{else}}/login{{end}}">Return to console</a>
     </div>
-    <footer class="access-foot"><span>Reference this status code when reporting an issue.</span><span class="mono">RateGuard {{.Status}}</span></footer>
+    <footer class="access-foot"><span>Quote this status code when reporting the issue.</span><span class="mono">RateGuard {{.Status}}</span></footer>
   </div>
 </section>
 {{end}}

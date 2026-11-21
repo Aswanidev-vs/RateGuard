@@ -1,16 +1,16 @@
 {{define "content"}}
 {{$total := add64 .Stats.Allowed24h .Stats.Blocked24h}}
 <header class="page-heading">
-  <p class="eyebrow">Control plane / trailing 24 hours</p>
+  <p class="eyebrow">Fleet summary · trailing 24 hours</p>
   <div class="page-heading-row">
     <h1>Operations overview</h1>
-    <p class="page-stamp"><span class="status-dot" aria-hidden="true"></span> Live fleet snapshot</p>
+    <p class="page-stamp"><span class="status-dot" aria-hidden="true"></span> Live snapshot</p>
   </div>
   <p class="lede">Rate-limit decisions, latency, tenant posture, and AWS spend anomalies in one place.</p>
 </header>
 
 <section class="stat-grid" aria-label="Fleet summary">
-  <article class="stat-card stat-card--hero">
+  <article class="stat-card stat-card--hero stat-card--full">
     <div class="stat-head">
       <p class="stat-label">Allowed requests <span class="stat-window">/ 24h</span></p>
       <span class="badge badge--ok">Passed</span>
@@ -24,7 +24,7 @@
         <span class="mono">{{pct .Stats.BlockRatePct}} blocked</span>
       </p>
     </div>
-    <p class="stat-foot">Across {{.Stats.EnabledTenants}} enabled tenant{{if ne .Stats.EnabledTenants 1}}s{{end}}.</p>
+    <p class="stat-foot">Across {{.Stats.EnabledTenants}} enabled tenant{{if ne .Stats.EnabledTenants 1}}s{{end}} of {{.Stats.TenantCount}} registered.</p>
   </article>
 
   <article class="stat-card stat-card--3 stat-card--danger">
@@ -36,7 +36,7 @@
     <p class="stat-foot">Requests shed by token buckets before reaching upstream.</p>
   </article>
 
-  <article class="stat-card stat-card--4">
+  <article class="stat-card stat-card--3">
     <div class="stat-head">
       <p class="stat-label">Block rate</p>
       <span class="stat-corner" aria-hidden="true"></span>
@@ -54,22 +54,13 @@
     <p class="stat-foot">Mean proxy overhead across the fleet.</p>
   </article>
 
-  <article class="stat-card stat-card--4">
+  <article class="stat-card stat-card--6">
     <div class="stat-head">
       <p class="stat-label">P95 latency</p>
       <span class="stat-corner" aria-hidden="true"></span>
     </div>
     <p class="stat-value"><span class="num">{{.Stats.P95Ms}}</span><span class="stat-unit">ms</span></p>
     <p class="stat-foot">Ninety-five percent of requests complete below this mark.</p>
-  </article>
-
-  <article class="stat-card stat-card--6">
-    <div class="stat-head">
-      <p class="stat-label">Tenant posture</p>
-      <span class="badge badge--neutral">{{.Stats.TenantCount}} total</span>
-    </div>
-    <p class="stat-value"><span class="num">{{.Stats.EnabledTenants}}</span><span class="stat-unit">enabled</span></p>
-    <p class="stat-foot">{{.Stats.TenantCount}} registered in total, including disabled or soft-deleted entries.</p>
   </article>
 
   <a class="stat-card stat-card--6 stat-card--link" href="/dashboard/anomalies">
@@ -85,7 +76,7 @@
 <section class="panel decision-panel" aria-labelledby="decision-title">
   <header class="panel-head">
     <div>
-      <p class="eyebrow">Proxy decisions · trailing 24h</p>
+      <p class="eyebrow">Proxy decisions · trailing 24 hours</p>
       <h2 id="decision-title">Allowed vs blocked</h2>
     </div>
     <span class="window-tag">token bucket</span>

@@ -1,11 +1,11 @@
 {{define "content"}}
 <header class="page-heading">
-  <p class="eyebrow">Spend watch / AWS billing</p>
+  <p class="eyebrow">Spend watch · AWS billing</p>
   <div class="page-heading-row">
     <h1>Cost anomaly log</h1>
     <p class="page-stamp"><span class="status-dot status-dot--amber" aria-hidden="true"></span> Hourly detector</p>
   </div>
-  <p class="lede">Estimated charges compared against a seven-day rolling baseline. High spend deviations alert through SNS and land here.</p>
+  <p class="lede">Estimated charges compared against the mean of the previous seven daily totals. High spend deviations alert through SNS and land here.</p>
 </header>
 
 <section class="signal-strip" aria-label="Detection parameters">
@@ -13,7 +13,7 @@
     <div><span class="signal-label">Cadence</span><strong>Every hour</strong></div>
   </div>
   <div class="signal-item">
-    <div><span class="signal-label">Rule</span><strong>&gt; baseline + 2σ or 1.5× baseline</strong></div>
+    <div><span class="signal-label">Rule</span><strong>&gt; min(mean + 2σ, 1.5 × mean), floored at 1.25 × mean</strong></div>
   </div>
   <div class="signal-item">
     <div><span class="signal-label">Delivery</span><strong>SNS alert + dashboard record</strong></div>

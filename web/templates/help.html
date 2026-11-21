@@ -1,6 +1,6 @@
 {{define "content"}}
 <header class="page-heading">
-  <p class="eyebrow">Reference / operator runbook</p>
+  <p class="eyebrow">Operator runbook</p>
   <div class="page-heading-row">
     <h1>Operator guide</h1>
     <p class="page-stamp"><span class="status-dot" aria-hidden="true"></span> Control plane</p>
@@ -10,13 +10,13 @@
 
 <section class="panel" aria-labelledby="help-limit-title">
   <header class="panel-head">
-    <div><p class="eyebrow">01 / Limiting</p><h2 id="help-limit-title">Token buckets in practice</h2></div>
+    <div><p class="eyebrow">Step 1 · Limiting</p><h2 id="help-limit-title">Token buckets in practice</h2></div>
   </header>
   <div class="help-grid">
     <article>
       <h3>What the numbers mean</h3>
       <p><strong>Limit rpm</strong> is the sustained rate. The bucket refills at <code>limit_rpm / 60</code> tokens each second. <strong>Burst</strong> is the bucket capacity: the number of requests that can pass back-to-back after an idle period.</p>
-      <p>Every admitted request consumes one token. When no token is available, RateGuard answers <code>429 Too Many Requests</code> with <code>Retry-After</code>, <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>.</p>
+      <p>Every admitted request consumes one token. When no token is available, RateGuard answers <code>429 Too Many Requests</code> with <code>Retry-After</code>, <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>. <code>X-RateLimit-Limit</code> reports the bucket capacity, not the rpm figure, and <code>Retry-After</code> is <code>60 / limit_rpm</code> seconds rounded up to at least one.</p>
     </article>
     <article>
       <h3>Key handling</h3>
@@ -28,21 +28,21 @@
 
 <section class="panel" aria-labelledby="help-curl-title">
   <header class="panel-head">
-    <div><p class="eyebrow">02 / Smoke test</p><h2 id="help-curl-title">Prove it from a shell</h2></div>
+    <div><p class="eyebrow">Step 2 · Smoke test</p><h2 id="help-curl-title">Prove it from a shell</h2></div>
   </header>
   <pre class="code-block">KEY=ag_live_your_key_here
 for i in $(seq 1 120); do
   curl -s -o /dev/null -w "%{http_code}\n" \
     -H "Authorization: Bearer $KEY" \
-    http://localhost/proxy/quote
+    http://localhost:8080/proxy/quote
 done
 # Expect the first `burst` requests to pass, then 429s.</pre>
-  <p class="hint">One request returns a random quote from the demo upstream. The flood above should produce a run of <code>200</code>s followed by <code>429</code>s; <code>Retry-After</code> tells the client when to come back.</p>
+  <p class="hint">One request returns a random quote from the demo upstream. The flood above should produce a run of <code>200</code>s followed by <code>429</code>s; <code>Retry-After</code> tells the client when to come back. The Go binary listens on <code>:8080</code>. Behind the Compose stack, Caddy publishes port 80 instead, so drop the port from that URL.</p>
 </section>
 
 <section class="panel" aria-labelledby="help-demo-title">
   <header class="panel-head">
-    <div><p class="eyebrow">03 / Sandbox</p><h2 id="help-demo-title">Use the quote sandbox</h2></div>
+    <div><p class="eyebrow">Step 3 · Sandbox</p><h2 id="help-demo-title">Use the quote sandbox</h2></div>
   </header>
   <div class="help-grid">
     <article>
@@ -57,7 +57,7 @@ done
     </article>
     <article>
       <h3>Reading cost anomalies</h3>
-      <p>An hourly worker compares the AWS account's <code>EstimatedCharges</code> metric against a seven-day rolling baseline. A finding is recorded when spend exceeds <code>baseline + 2σ</code> or <code>1.5 × baseline</code>, deduplicated per UTC hour, and published to SNS.</p>
+      <p>An hourly Lambda compares the AWS account's <code>EstimatedCharges</code> metric against the mean of the previous seven daily totals. The threshold is the lower of <code>mean + 2σ</code> and <code>1.5 × mean</code>, floored at <code>1.25 × mean</code> to suppress noise on a small bill. At least three usable history samples are required, otherwise the check is skipped. A breach is deduplicated per UTC hour and published to SNS.</p>
       <p>Billing data is account-wide, so findings are attached to the reserved <code>__account__</code> scope rather than an individual tenant. Inject a synthetic spike during a demo by setting <code>COST_FAKE_CURRENT</code> and <code>COST_FAKE_HISTORY</code> on the Lambda.</p>
     </article>
   </div>
@@ -65,7 +65,7 @@ done
 
 <section class="panel" aria-labelledby="help-ops-title">
   <header class="panel-head">
-    <div><p class="eyebrow">04 / Operations</p><h2 id="help-ops-title">Health and limits</h2></div>
+    <div><p class="eyebrow">Step 4 · Operations</p><h2 id="help-ops-title">Health and limits</h2></div>
   </header>
   <div class="help-grid">
     <article>

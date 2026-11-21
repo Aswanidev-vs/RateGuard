@@ -72,18 +72,18 @@
   <div class="key-reveal-head">
     <p class="eyebrow">Tenant provisioned</p>
     <h2>{{.Tenant.Name}} is ready</h2>
-    <p class="hint">Tenant ID <code>{{.Tenant.TenantID}}</code> · {{.Tenant.LimitRPM}} rpm sustained · burst {{.Tenant.Burst}}</p>
+    <p class="hint">ID <code>{{.Tenant.TenantID}}</code> · {{.Tenant.LimitRPM}} rpm sustained · burst {{.Tenant.Burst}}</p>
   </div>
 
   <div class="key-reveal-body">
-    <p class="key-label">API key, shown once</p>
+    <p class="key-label">API key — shown once</p>
     <div class="key-line">
       <code class="secret" id="created-api-key">{{.APIKey}}</code>
       <button class="btn btn--ghost btn--small" type="button" data-copy-target="created-api-key">Copy key</button>
     </div>
     <p class="key-warning">
       <span class="key-warning-mark" aria-hidden="true"></span>
-      Store this key now. RateGuard stores only a hash and prefix; the full key cannot be shown again.
+      Store this key now. Only a SHA-256 hash and prefix are saved; the full key cannot be shown again.
     </p>
   </div>
 
@@ -170,8 +170,8 @@
   <div class="anomaly-empty">
     <span class="empty-mark" aria-hidden="true"></span>
     <div>
-      <strong>No cost anomalies on record</strong>
-      <p>Spend is tracking inside the detection thresholds. The hourly detector will post new findings here.</p>
+      <strong>Spend is within thresholds</strong>
+      <p>No deviations from the seven-day baseline. The hourly detector checks <code>EstimatedCharges</code> and posts findings here if spend crosses <code>baseline + 2σ</code> or <code>1.5 × baseline</code>.</p>
     </div>
   </div>
   {{end}}
@@ -186,9 +186,9 @@
 <section id="demo" class="demo-panel" data-demo-tenant-id="{{.DemoDefaultTenant}}" aria-labelledby="demo-title">
   <header class="demo-head">
     <div class="demo-heading">
-      <p class="eyebrow">Sandbox upstream probe</p>
+      <p class="eyebrow">Sandbox · rate-limit probe</p>
       <h2 id="demo-title">Quote of the day</h2>
-      <p class="hint">A tiny upstream service exposed only through the rate-limit proxy. Send one request, then flood the bucket and watch the 429s land.</p>
+      <p class="hint">A tiny upstream exposed only through the proxy. Send one request, then flood the bucket and watch the 429s land.</p>
     </div>
     <span class="status-chip" id="demo-status" data-state="idle" role="status">Idle</span>
   </header>

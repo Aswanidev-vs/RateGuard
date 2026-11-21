@@ -1,6 +1,6 @@
 {{define "content"}}
 <header class="page-heading">
-  <p class="eyebrow">Registry / tenant control</p>
+  <p class="eyebrow">Tenant registry</p>
   <div class="page-heading-row">
     <h1>Tenants &amp; keys</h1>
     <p class="page-stamp"><span class="mono">{{len .Tenants}}</span> registered</p>
@@ -59,7 +59,7 @@
       <p class="eyebrow">Live registry</p>
       <h2 id="tenant-table-title">Tenant ledger</h2>
     </div>
-    <p class="hint">Save a row to PATCH limits and state. Delete performs a soft-disable.</p>
+    <p class="hint">Edit a row and Save to patch its limits and state. Delete soft-disables the tenant.</p>
   </header>
 
   <div class="table-wrap">
