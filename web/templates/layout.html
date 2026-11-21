@@ -62,7 +62,6 @@
           <span class="crumbs-current">{{.Title}}</span>
         </p>
         <div class="topbar-meta">
-          {{if .DevMode}}<span class="badge badge--warn">Dev mode</span>{{end}}
           <time class="topbar-clock" data-clock aria-hidden="true">--:--:--</time>
           <span class="session-tag">Admin</span>
         </div>
@@ -85,7 +84,7 @@
   </main>
   <footer class="guest-footer">
     <span class="footer-brand">RateGuard <span class="mono">v{{.Version}}</span></span>
-    <span class="footer-note">{{if .DevMode}}Development mode{{else}}Restricted operator surface{{end}}</span>
+    <span class="footer-note">Restricted operator surface</span>
   </footer>
   {{end}}
 

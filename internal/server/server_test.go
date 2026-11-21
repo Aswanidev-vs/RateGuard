@@ -308,6 +308,9 @@ func TestDashboardLoginCSRFAndPages(t *testing.T) {
 	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "name=\"key\"") {
 		t.Fatalf("login page: %d %s", w.Code, w.Body.String())
 	}
+	if strings.Contains(w.Body.String(), "Dev mode") {
+		t.Fatal("login page still renders the dev-mode badge")
+	}
 
 	form := url.Values{"key": {testAdminKey}, "next": {"/dashboard"}}
 	r := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
