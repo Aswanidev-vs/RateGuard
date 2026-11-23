@@ -199,23 +199,23 @@ flowchart TD
 
 ## Repository layout
 
-| Path | Purpose |
-|---|---|
-| `cmd/server` | RateGuard API, rate-limit proxy, and dashboard entrypoint (`-healthcheck` flag for containers) |
-| `cmd/lambda` | Scheduled cost anomaly detector; supports `COST_FAKE_*` for demos |
-| `examples/quote` | "Quote of the Day" example upstream used by the proxy demo |
-| `internal/limiter`, `internal/auth` | Token bucket, API/admin keys, login attempt limiting |
-| `internal/store`, `internal/usage` | In-memory + DynamoDB persistence, batched usage writer |
-| `internal/server` | chi router, middleware, admin API, proxy, dashboard handlers |
-| `internal/cost` | Anomaly evaluation, CloudWatch/SNS adapters, worker |
-| `web/` | Embedded templates, CSS, JS, htmx, and `logo.png` |
-| `terraform/` | Root AWS stack + `bootstrap/` for remote state |
-| `deploy/Caddyfile` | Edge proxy configuration used by compose |
-| `.github/workflows/ci.yml` | Test → validate → scan/push → SSM deploy |
-| `docs/index.html`, `docs/styles.css`, `docs/script.js` | Static marketing landing page (open `docs/index.html`) |
-| `docs/AWS-DEPLOYMENT-GUIDE.md`, `docs/aws.html` | Detailed AWS deployment runbook (Markdown + web page) |
-| `docs/docker/`, `docs/terraform/` | Operator guides you execute manually |
-| `docs/UI-DESIGN.md`, `docs/SECURITY-AUDIT.md` | Design retrofit and security audit reports |
+| Path                                                   | Purpose                                                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `cmd/server`                                           | RateGuard API, rate-limit proxy, and dashboard entrypoint (`-healthcheck` flag for containers) |
+| `cmd/lambda`                                           | Scheduled cost anomaly detector; supports `COST_FAKE_*` for demos                              |
+| `examples/quote`                                       | "Quote of the Day" example upstream used by the proxy demo                                     |
+| `internal/limiter`, `internal/auth`                    | Token bucket, API/admin keys, login attempt limiting                                           |
+| `internal/store`, `internal/usage`                     | In-memory + DynamoDB persistence, batched usage writer                                         |
+| `internal/server`                                      | chi router, middleware, admin API, proxy, dashboard handlers                                   |
+| `internal/cost`                                        | Anomaly evaluation, CloudWatch/SNS adapters, worker                                            |
+| `web/`                                                 | Embedded templates, CSS, JS, htmx, and `logo.png`                                              |
+| `terraform/`                                           | Root AWS stack + `bootstrap/` for remote state                                                 |
+| `deploy/Caddyfile`                                     | Edge proxy configuration used by compose                                                       |
+| `.github/workflows/ci.yml`                             | Test → validate → scan/push → SSM deploy                                                       |
+| `docs/index.html`, `docs/styles.css`, `docs/script.js` | Static marketing landing page (open `docs/index.html`)                                         |
+| `docs/AWS-DEPLOYMENT-GUIDE.md`, `docs/aws.html`        | Detailed AWS deployment runbook (Markdown + web page)                                          |
+| `docs/docker/`, `docs/terraform/`                      | Operator guides you execute manually                                                           |
+| `docs/UI-DESIGN.md`, `docs/SECURITY-AUDIT.md`          | Design retrofit and security audit reports                                                     |
 
 There is intentionally **no root `main.go`**. Go builds every package with `go build ./...`, and the server is started with `go run ./cmd/server`.
 
@@ -306,16 +306,16 @@ A copy-paste operator runbook — credentials, OIDC, state bootstrap, apply, fir
 
 Base: `/api/v1`. Admin routes use `Authorization: Bearer <admin key>` (or `X-Admin-Key`).
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/tenants` | admin | `{"name","email","limit_rpm","burst"}` → `{"tenant_id","api_key"}` (key shown once) |
-| GET | `/tenants` | admin | List tenants |
-| GET | `/tenants/{id}` | admin | Tenant object; hash is never returned |
-| PATCH | `/tenants/{id}` | admin | `limit_rpm`, `burst`, `enabled` |
-| DELETE | `/tenants/{id}` | admin | Soft delete (`enabled=false`) |
-| GET | `/tenants/{id}/usage` | admin or tenant | `?from=&to=`; summary with avg/p95 |
-| ANY | `/proxy/*` | tenant | Forwards to upstream; `429` + headers on exceed |
-| GET | `/healthz`, `/readyz` | none | Liveness / store readiness |
+| Method | Path                  | Auth            | Notes                                                                               |
+| ------ | --------------------- | --------------- | ----------------------------------------------------------------------------------- |
+| POST   | `/tenants`            | admin           | `{"name","email","limit_rpm","burst"}` → `{"tenant_id","api_key"}` (key shown once) |
+| GET    | `/tenants`            | admin           | List tenants                                                                        |
+| GET    | `/tenants/{id}`       | admin           | Tenant object; hash is never returned                                               |
+| PATCH  | `/tenants/{id}`       | admin           | `limit_rpm`, `burst`, `enabled`                                                     |
+| DELETE | `/tenants/{id}`       | admin           | Soft delete (`enabled=false`)                                                       |
+| GET    | `/tenants/{id}/usage` | admin or tenant | `?from=&to=`; summary with avg/p95                                                  |
+| ANY    | `/proxy/*`            | tenant          | Forwards to upstream; `429` + headers on exceed                                     |
+| GET    | `/healthz`, `/readyz` | none            | Liveness / store readiness                                                          |
 
 Errors use `{"error":"<code>","message":"<human>"}` with codes `unauthorized`, `forbidden`, `not_found`, `rate_limited`, `invalid_input`, `internal`.
 

@@ -19,6 +19,46 @@ flowchart TD
   K --> L[Teardown when done]
 ```
 
+## Quick start (easiest path on Amazon Linux)
+
+Use this if you just want it running with the fewest steps. Full detail for every step follows in sections 1–15.
+
+1. **Prereqs on your laptop:** AWS CLI v2 logged in, Docker Desktop (Linux containers), Go 1.27+. On the EC2 side, nothing — user data installs Docker/Caddy.
+2. **Build the Lambda binary** (from repo root):
+   ```bash
+   mkdir -p build
+   GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -o build/bootstrap ./cmd/lambda
+   ```
+3. **Bootstrap remote state** (from `terraform/bootstrap`):
+   ```bash
+   TF init
+   TF apply -var='bucket_name=rateguard-tfstate' -var='region=ap-south-1'
+   ```
+   Copy the `state_bucket` and `lock_table` outputs into `terraform/backend.hcl`.
+4. **Configure the root stack** (from `terraform/`): `cp terraform.tfvars.example terraform.tfvars`, set `admin_email`, keep `domain_name=""` and `allowed_ssh_cidr=""` for HTTP + SSM-only access. Export secrets:
+   ```bash
+   export TF_VAR_admin_api_key="$(openssl rand -base64 48)"
+   export TF_VAR_session_secret="$(openssl rand -base64 48)"
+   ```
+   Save the admin key — you need it to sign in.
+5. **Apply** (from `terraform/`):
+   ```bash
+   TF init -backend-config=backend.hcl
+   TF fmt -check && TF validate
+   TF apply -target=aws_ecr_repository.app   # create ECR first
+   ```
+6. **Push the first image** to ECR (from repo root): build with `docker build --build-arg VERSION=bootstrap --build-arg COMMIT=bootstrap -t rateguard:bootstrap .`, tag and push as `latest` (see section 7).
+7. **Finish apply**: `TF apply` (or a single `TF apply` from step 5 also works; user data retries the pull for up to 10 minutes).
+8. **Verify**:
+   ```bash
+   curl -s http://$(TF output -raw ec2_public_ip)/healthz   # {"status":"ok"}
+   aws ssm get-parameter --name /rateguard/admin-api-key --with-decryption --query Parameter.Value --output text
+   ```
+   Open the `dashboard_url` output, sign in, create a tenant, then hit `/proxy/quote` until you see `429` + `Retry-After`.
+9. **Teardown** when done: `TF destroy` (from `terraform/`), then `TF destroy` (from `terraform/bootstrap/`).
+
+> Amazon Linux 2023 on EC2 is provisioned by Terraform user data — you do not install anything on it by hand. Access it only via SSM Session Manager (`aws ssm start-session --target <instance-id>`); SSH is disabled by default.
+
 ---
 
 ## 0. What you will have at the end
